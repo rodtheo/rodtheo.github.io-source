@@ -1,0 +1,3885 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="author" content="Rodrigo Theodoro">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <title>The Lempel-Ziv or Ziv-lempel, or, even LZ compression | </title>
+
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+	<link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="alternate" type="application/atom+xml" title=" blog atom feed" href="/feeds/all.atom.xml" />
+        <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700' rel='stylesheet' type='text/css'>
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="/theme/css/icons.css"/>
+        <style>.highlight .hll { background-color: #ffffcc }
+.highlight .c { color: #60a0b0; font-style: italic } /* Comment */
+.highlight .err { border: 1px solid #FF0000 } /* Error */
+.highlight .k { color: #007020; font-weight: bold } /* Keyword */
+.highlight .o { color: #666666 } /* Operator */
+.highlight .cm { color: #60a0b0; font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: #007020 } /* Comment.Preproc */
+.highlight .c1 { color: #60a0b0; font-style: italic } /* Comment.Single */
+.highlight .cs { color: #60a0b0; background-color: #fff0f0 } /* Comment.Special */
+.highlight .gd { color: #A00000 } /* Generic.Deleted */
+.highlight .ge { font-style: italic } /* Generic.Emph */
+.highlight .gr { color: #FF0000 } /* Generic.Error */
+.highlight .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.highlight .gi { color: #00A000 } /* Generic.Inserted */
+.highlight .go { color: #808080 } /* Generic.Output */
+.highlight .gp { color: #c65d09; font-weight: bold } /* Generic.Prompt */
+.highlight .gs { font-weight: bold } /* Generic.Strong */
+.highlight .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.highlight .gt { color: #0040D0 } /* Generic.Traceback */
+.highlight .kc { color: #007020; font-weight: bold } /* Keyword.Constant */
+.highlight .kd { color: #007020; font-weight: bold } /* Keyword.Declaration */
+.highlight .kn { color: #007020; font-weight: bold } /* Keyword.Namespace */
+.highlight .kp { color: #007020 } /* Keyword.Pseudo */
+.highlight .kr { color: #007020; font-weight: bold } /* Keyword.Reserved */
+.highlight .kt { color: #902000 } /* Keyword.Type */
+.highlight .m { color: #40a070 } /* Literal.Number */
+.highlight .s { color: #4070a0 } /* Literal.String */
+.highlight .na { color: #4070a0 } /* Name.Attribute */
+.highlight .nb { color: #007020 } /* Name.Builtin */
+.highlight .nc { color: #0e84b5; font-weight: bold } /* Name.Class */
+.highlight .no { color: #60add5 } /* Name.Constant */
+.highlight .nd { color: #555555; font-weight: bold } /* Name.Decorator */
+.highlight .ni { color: #d55537; font-weight: bold } /* Name.Entity */
+.highlight .ne { color: #007020 } /* Name.Exception */
+.highlight .nf { color: #06287e } /* Name.Function */
+.highlight .nl { color: #002070; font-weight: bold } /* Name.Label */
+.highlight .nn { color: #0e84b5; font-weight: bold } /* Name.Namespace */
+.highlight .nt { color: #062873; font-weight: bold } /* Name.Tag */
+.highlight .nv { color: #bb60d5 } /* Name.Variable */
+.highlight .ow { color: #007020; font-weight: bold } /* Operator.Word */
+.highlight .w { color: #bbbbbb } /* Text.Whitespace */
+.highlight .mf { color: #40a070 } /* Literal.Number.Float */
+.highlight .mh { color: #40a070 } /* Literal.Number.Hex */
+.highlight .mi { color: #40a070 } /* Literal.Number.Integer */
+.highlight .mo { color: #40a070 } /* Literal.Number.Oct */
+.highlight .sb { color: #4070a0 } /* Literal.String.Backtick */
+.highlight .sc { color: #4070a0 } /* Literal.String.Char */
+.highlight .sd { color: #4070a0; font-style: italic } /* Literal.String.Doc */
+.highlight .s2 { color: #4070a0 } /* Literal.String.Double */
+.highlight .se { color: #4070a0; font-weight: bold } /* Literal.String.Escape */
+.highlight .sh { color: #4070a0 } /* Literal.String.Heredoc */
+.highlight .si { color: #70a0d0; font-style: italic } /* Literal.String.Interpol */
+.highlight .sx { color: #c65d09 } /* Literal.String.Other */
+.highlight .sr { color: #235388 } /* Literal.String.Regex */
+.highlight .s1 { color: #4070a0 } /* Literal.String.Single */
+.highlight .ss { color: #517918 } /* Literal.String.Symbol */
+.highlight .bp { color: #007020 } /* Name.Builtin.Pseudo */
+.highlight .vc { color: #bb60d5 } /* Name.Variable.Class */
+.highlight .vg { color: #bb60d5 } /* Name.Variable.Global */
+.highlight .vi { color: #bb60d5 } /* Name.Variable.Instance */
+.highlight .il { color: #40a070 } /* Literal.Number.Integer.Long */</style>
+        <style>body {
+  margin: 0;
+  padding: 0;
+  font: 15px 'Source Sans Pro', sans-serif;
+  line-height: 1.6em;
+  color: #222;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+a {
+  color: #007EE5;
+  text-decoration: none;
+}
+a:hover {
+  color: #007EE5;
+  text-decoration: none;
+}
+header.main-header {
+  background: none repeat scroll 0% 0% #205F29;
+  margin-bottom: 0px;
+}
+header.main-header a {
+  color: #fff;
+}
+header.main-header .container {
+  max-width: 1000px;
+}
+header.main-header .container nav a:hover {
+  background-color: #5C881C;
+}
+article {
+  margin: 0;
+}
+article header.about {
+  margin-bottom: 0px;
+  padding-bottom: 0px;
+}
+article header {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+}
+article header h1 {
+  margin-bottom: 2px;
+  font-weight: 700;
+  color: #000;
+}
+article header time {
+  color: #9E9E9E;
+  font-size: 0.85em;
+  float: right;
+}
+article header time.left {
+  color: #9E9E9E;
+  font-size: 0.85em;
+  float: left;
+}
+article div.social-links ul {
+  padding: 0px;
+}
+article div.social-links li {
+  display: inline;
+  font-size: 20px;
+}
+article div.social-links li a {
+  color: #000;
+  padding: 10px;
+}
+article div.social-links li a:hover {
+  color: #666;
+  text-decoration: none;
+}
+article p {
+  font-size: 16px;
+  margin-bottom: 20px;
+  line-height: 1.6em;
+}
+article p.note {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  padding: 0.533em 0.733em;
+}
+article p.update {
+  background-color: #FEEFB3;
+  border: 1px solid #e6e68a;
+  padding: 0.533em 0.733em;
+}
+article p.alert {
+  background-color: #ffe2e2;
+  border: 1px solid #ffb2b2;
+  padding: 0.533em 0.733em;
+}
+article ul,
+article ol {
+  margin-top: 0px;
+  margin-bottom: 25px;
+}
+article li {
+  font-size: 16px;
+  line-height: 1.6em;
+}
+article a:hover {
+  text-decoration: underline;
+}
+article blockquote {
+  border-left: 2px solid #c7c7cc;
+  color: #666;
+  margin: 30px 0;
+  padding: 0 0 0 25px;
+}
+article img {
+  max-width: 100%;
+}
+article code {
+  color: #333;
+  background-color: #EEE;
+  border-radius: 0;
+  font-size: 13px;
+}
+article .meta {
+  font-size: 11px;
+}
+article .meta a:hover {
+  text-decoration: none;
+}
+article .meta div {
+  margin-bottom: 20px;
+  display: block;
+}
+article .meta a.tag {
+  margin: 0 10px 10px 0;
+  padding: 1px 12px;
+  display: inline-block;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.05);
+}
+article .meta a.tag:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+article .meta a.read_more,
+article .meta a.comments_btn {
+  font-size: 14px;
+  font-weight: 800;
+  padding: 10px 20px;
+  color: #205F29;
+  background: #FFF;
+  border: 1px solid #205F29;
+}
+article .meta a.read_more:hover,
+article .meta a.comments_btn:hover {
+  color: #FFF;
+  background: #5C881C;
+}
+.index {
+  max-width: 700px;
+}
+.index article header h2 {
+  font-size: 36px;
+  margin-bottom: 2px;
+  font-weight: 700;
+}
+.index article header h2 a {
+  color: #000;
+}
+.index article header h2 a:hover {
+  color: #007EE5;
+  text-decoration: none;
+}
+.index .separator {
+  padding: 40px 0 0 0;
+  margin: 0 0 40px 0;
+  height: 10px;
+  border-bottom: solid 1px #CCC;
+}
+.index .pagination {
+  display: block;
+  margin-bottom: 100px;
+}
+.index .pagination .left {
+  text-align: right;
+}
+.index .pagination .right {
+  text-align: left;
+}
+.index .pagination a {
+  display: inline-block;
+  border: 2px solid #5C881C;
+  margin: 0 5px;
+  padding: 8px 20px;
+  font-weight: bold;
+  color: #5C881C;
+}
+.index .pagination a:hover {
+  color: #FFF;
+  background: #5C881C;
+}
+.post {
+  max-width: 700px;
+}
+.post h2:before {
+  content: "# ";
+  font-weight: bold;
+  color: #DDD;
+}
+.post h3:before {
+  content: "## ";
+  font-weight: bold;
+  color: #DDD;
+}
+.post h4:before {
+  content: "### ";
+  font-weight: bold;
+  color: #DDD;
+}
+.post article .meta {
+  margin: 50px 0 100px;
+}
+.list {
+  max-width: 700px;
+}
+.list ul.double-list {
+  margin: 0 auto 60px;
+  padding: 0;
+  list-style-type: none;
+}
+.list ul.double-list li {
+  padding: 5px 0;
+}
+.list ul.double-list li h2 {
+  font-size: 1em;
+  display: inline;
+  font-weight: normal;
+}
+.list ul.double-list li span {
+  font-family: sans-serif;
+  text-transform: uppercase;
+  text-align: right;
+  float: right;
+  padding-top: 3px;
+  font-size: 12px;
+  color: #999;
+}
+.full-width-content {
+  padding-top: 10px;
+  padding-left: 0px;
+  padding-right: 0px;
+  margin-left: -20px;
+  margin-right: -20px;
+}
+.col-xs-1,
+.col-sm-1,
+.col-md-1,
+.col-lg-1,
+.col-xs-2,
+.col-sm-2,
+.col-md-2,
+.col-lg-2,
+.col-xs-3,
+.col-sm-3,
+.col-md-3,
+.col-lg-3,
+.col-xs-4,
+.col-sm-4,
+.col-md-4,
+.col-lg-4,
+.col-xs-5,
+.col-sm-5,
+.col-md-5,
+.col-lg-5,
+.col-xs-6,
+.col-sm-6,
+.col-md-6,
+.col-lg-6,
+.col-xs-7,
+.col-sm-7,
+.col-md-7,
+.col-lg-7,
+.col-xs-8,
+.col-sm-8,
+.col-md-8,
+.col-lg-8,
+.col-xs-9,
+.col-sm-9,
+.col-md-9,
+.col-lg-9,
+.col-xs-10,
+.col-sm-10,
+.col-md-10,
+.col-lg-10,
+.col-xs-11,
+.col-sm-11,
+.col-md-11,
+.col-lg-11,
+.col-xs-12,
+.col-sm-12,
+.col-md-12,
+.col-lg-12 {
+  padding-right: 0px;
+  padding-left: 0px;
+}</style>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+        <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+        <script type="text/javascript">
+        init_mathjax = function() {
+            if (window.MathJax) {
+                // MathJax loaded
+                MathJax.Hub.Config({
+                    tex2jax: {
+                        inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                        displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+                    },
+                    displayAlign: 'left', // Change this to 'center' to center equations.
+                    "HTML-CSS": {
+                        styles: {'.MathJax_Display': {"margin": 0}}
+                    }
+                });
+                MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+            }
+        }
+        init_mathjax();
+        </script>
+
+    </head>
+
+    <body>
+        <header class="navbar navbar-inverse bs-docs-nav">
+            <div class="container-fluid">
+                <div class="navbar-header">
+		  <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#theNavbar">
+		    <span class="icon-bar"></span>
+		    <span class="icon-bar"></span>
+		    <span class="icon-bar"></span> 
+		  </button>
+                  <a class="navbar-brand" href="/" title="Home" class="title"></a>
+                </div>
+                <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation" id="theNavbar">
+		    <ul class="nav navbar-nav navbar-right">
+                            <li><a href="/pages/about.html" title="About">About</a></li>
+                            <li><a href="/archives.html" title="Archive">Archive</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <div id="wrap">
+<div class="container post">
+    <article>
+        <header>
+            <h1>The Lempel-Ziv or Ziv-lempel, or, even LZ compression</h1>
+            <time datetime="article.date.isoformat()" pubdate>Thu 13 September 2018</time>
+        </header>
+
+        <div class="article_content">
+            <style type="text/css">/*!
+*
+* IPython notebook
+*
+*/
+/* CSS font colors for translated ANSI escape sequences */
+/* The color values are a mix of
+   http://www.xcolors.net/dl/baskerville-ivorylight and
+   http://www.xcolors.net/dl/euphrasia */
+.ansi-black-fg {
+  color: #3E424D;
+}
+.ansi-black-bg {
+  background-color: #3E424D;
+}
+.ansi-black-intense-fg {
+  color: #282C36;
+}
+.ansi-black-intense-bg {
+  background-color: #282C36;
+}
+.ansi-red-fg {
+  color: #E75C58;
+}
+.ansi-red-bg {
+  background-color: #E75C58;
+}
+.ansi-red-intense-fg {
+  color: #B22B31;
+}
+.ansi-red-intense-bg {
+  background-color: #B22B31;
+}
+.ansi-green-fg {
+  color: #00A250;
+}
+.ansi-green-bg {
+  background-color: #00A250;
+}
+.ansi-green-intense-fg {
+  color: #007427;
+}
+.ansi-green-intense-bg {
+  background-color: #007427;
+}
+.ansi-yellow-fg {
+  color: #DDB62B;
+}
+.ansi-yellow-bg {
+  background-color: #DDB62B;
+}
+.ansi-yellow-intense-fg {
+  color: #B27D12;
+}
+.ansi-yellow-intense-bg {
+  background-color: #B27D12;
+}
+.ansi-blue-fg {
+  color: #208FFB;
+}
+.ansi-blue-bg {
+  background-color: #208FFB;
+}
+.ansi-blue-intense-fg {
+  color: #0065CA;
+}
+.ansi-blue-intense-bg {
+  background-color: #0065CA;
+}
+.ansi-magenta-fg {
+  color: #D160C4;
+}
+.ansi-magenta-bg {
+  background-color: #D160C4;
+}
+.ansi-magenta-intense-fg {
+  color: #A03196;
+}
+.ansi-magenta-intense-bg {
+  background-color: #A03196;
+}
+.ansi-cyan-fg {
+  color: #60C6C8;
+}
+.ansi-cyan-bg {
+  background-color: #60C6C8;
+}
+.ansi-cyan-intense-fg {
+  color: #258F8F;
+}
+.ansi-cyan-intense-bg {
+  background-color: #258F8F;
+}
+.ansi-white-fg {
+  color: #C5C1B4;
+}
+.ansi-white-bg {
+  background-color: #C5C1B4;
+}
+.ansi-white-intense-fg {
+  color: #A1A6B2;
+}
+.ansi-white-intense-bg {
+  background-color: #A1A6B2;
+}
+.ansi-default-inverse-fg {
+  color: #FFFFFF;
+}
+.ansi-default-inverse-bg {
+  background-color: #000000;
+}
+.ansi-bold {
+  font-weight: bold;
+}
+.ansi-underline {
+  text-decoration: underline;
+}
+/* The following styles are deprecated an will be removed in a future version */
+.ansibold {
+  font-weight: bold;
+}
+.ansi-inverse {
+  outline: 0.5px dotted;
+}
+/* use dark versions for foreground, to improve visibility */
+.ansiblack {
+  color: black;
+}
+.ansired {
+  color: darkred;
+}
+.ansigreen {
+  color: darkgreen;
+}
+.ansiyellow {
+  color: #c4a000;
+}
+.ansiblue {
+  color: darkblue;
+}
+.ansipurple {
+  color: darkviolet;
+}
+.ansicyan {
+  color: steelblue;
+}
+.ansigray {
+  color: gray;
+}
+/* and light for background, for the same reason */
+.ansibgblack {
+  background-color: black;
+}
+.ansibgred {
+  background-color: red;
+}
+.ansibggreen {
+  background-color: green;
+}
+.ansibgyellow {
+  background-color: yellow;
+}
+.ansibgblue {
+  background-color: blue;
+}
+.ansibgpurple {
+  background-color: magenta;
+}
+.ansibgcyan {
+  background-color: cyan;
+}
+.ansibggray {
+  background-color: gray;
+}
+div.cell {
+  /* Old browsers */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: vertical;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: vertical;
+  box-align: stretch;
+  /* Modern browsers */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  border-radius: 2px;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  border-width: 1px;
+  border-style: solid;
+  border-color: transparent;
+  width: 100%;
+  padding: 5px;
+  /* This acts as a spacer between cells, that is outside the border */
+  margin: 0px;
+  outline: none;
+  position: relative;
+  overflow: visible;
+}
+div.cell:before {
+  position: absolute;
+  display: block;
+  top: -1px;
+  left: -1px;
+  width: 5px;
+  height: calc(100% +  2px);
+  content: '';
+  background: transparent;
+}
+div.cell.jupyter-soft-selected {
+  border-left-color: #E3F2FD;
+  border-left-width: 1px;
+  padding-left: 5px;
+  border-right-color: #E3F2FD;
+  border-right-width: 1px;
+  background: #E3F2FD;
+}
+@media print {
+  div.cell.jupyter-soft-selected {
+    border-color: transparent;
+  }
+}
+div.cell.selected,
+div.cell.selected.jupyter-soft-selected {
+  border-color: #ababab;
+}
+div.cell.selected:before,
+div.cell.selected.jupyter-soft-selected:before {
+  position: absolute;
+  display: block;
+  top: -1px;
+  left: -1px;
+  width: 5px;
+  height: calc(100% +  2px);
+  content: '';
+  background: #42A5F5;
+}
+@media print {
+  div.cell.selected,
+  div.cell.selected.jupyter-soft-selected {
+    border-color: transparent;
+  }
+}
+.edit_mode div.cell.selected {
+  border-color: #66BB6A;
+}
+.edit_mode div.cell.selected:before {
+  position: absolute;
+  display: block;
+  top: -1px;
+  left: -1px;
+  width: 5px;
+  height: calc(100% +  2px);
+  content: '';
+  background: #66BB6A;
+}
+@media print {
+  .edit_mode div.cell.selected {
+    border-color: transparent;
+  }
+}
+.prompt {
+  /* This needs to be wide enough for 3 digit prompt numbers: In[100]: */
+  min-width: 14ex;
+  /* This padding is tuned to match the padding on the CodeMirror editor. */
+  padding: 0.4em;
+  margin: 0px;
+  font-family: monospace;
+  text-align: right;
+  /* This has to match that of the the CodeMirror class line-height below */
+  line-height: 1.21429em;
+  /* Don't highlight prompt number selection */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  /* Use default cursor */
+  cursor: default;
+}
+@media (max-width: 540px) {
+  .prompt {
+    text-align: left;
+  }
+}
+div.inner_cell {
+  min-width: 0;
+  /* Old browsers */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: vertical;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: vertical;
+  box-align: stretch;
+  /* Modern browsers */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  /* Old browsers */
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  box-flex: 1;
+  /* Modern browsers */
+  flex: 1;
+}
+/* input_area and input_prompt must match in top border and margin for alignment */
+div.input_area {
+  border: 1px solid #cfcfcf;
+  border-radius: 2px;
+  background: #f7f7f7;
+  line-height: 1.21429em;
+}
+/* This is needed so that empty prompt areas can collapse to zero height when there
+   is no content in the output_subarea and the prompt. The main purpose of this is
+   to make sure that empty JavaScript output_subareas have no height. */
+div.prompt:empty {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+div.unrecognized_cell {
+  padding: 5px 5px 5px 0px;
+  /* Old browsers */
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: horizontal;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: horizontal;
+  box-align: stretch;
+  /* Modern browsers */
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+div.unrecognized_cell .inner_cell {
+  border-radius: 2px;
+  padding: 5px;
+  font-weight: bold;
+  color: red;
+  border: 1px solid #cfcfcf;
+  background: #eaeaea;
+}
+div.unrecognized_cell .inner_cell a {
+  color: inherit;
+  text-decoration: none;
+}
+div.unrecognized_cell .inner_cell a:hover {
+  color: inherit;
+  text-decoration: none;
+}
+@media (max-width: 540px) {
+  div.unrecognized_cell > div.prompt {
+    display: none;
+  }
+}
+div.code_cell {
+  /* avoid page breaking on code cells when printing */
+}
+@media print {
+  div.code_cell {
+    page-break-inside: avoid;
+  }
+}
+/* any special styling for code cells that are currently running goes here */
+div.input {
+  page-break-inside: avoid;
+  /* Old browsers */
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: horizontal;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: horizontal;
+  box-align: stretch;
+  /* Modern browsers */
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+@media (max-width: 540px) {
+  div.input {
+    /* Old browsers */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-box-align: stretch;
+    display: -moz-box;
+    -moz-box-orient: vertical;
+    -moz-box-align: stretch;
+    display: box;
+    box-orient: vertical;
+    box-align: stretch;
+    /* Modern browsers */
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+/* input_area and input_prompt must match in top border and margin for alignment */
+div.input_prompt {
+  color: #303F9F;
+  border-top: 1px solid transparent;
+}
+div.input_area > div.highlight {
+  margin: 0.4em;
+  border: none;
+  padding: 0px;
+  background-color: transparent;
+}
+div.input_area > div.highlight > pre {
+  margin: 0px;
+  border: none;
+  padding: 0px;
+  background-color: transparent;
+}
+/* The following gets added to the <head> if it is detected that the user has a
+ * monospace font with inconsistent normal/bold/italic height.  See
+ * notebookmain.js.  Such fonts will have keywords vertically offset with
+ * respect to the rest of the text.  The user should select a better font.
+ * See: https://github.com/ipython/ipython/issues/1503
+ *
+ * .CodeMirror span {
+ *      vertical-align: bottom;
+ * }
+ */
+.CodeMirror {
+  line-height: 1.21429em;
+  /* Changed from 1em to our global default */
+  font-size: 14px;
+  height: auto;
+  /* Changed to auto to autogrow */
+  background: none;
+  /* Changed from white to allow our bg to show through */
+}
+.CodeMirror-scroll {
+  /*  The CodeMirror docs are a bit fuzzy on if overflow-y should be hidden or visible.*/
+  /*  We have found that if it is visible, vertical scrollbars appear with font size changes.*/
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+.CodeMirror-lines {
+  /* In CM2, this used to be 0.4em, but in CM3 it went to 4px. We need the em value because */
+  /* we have set a different line-height and want this to scale with that. */
+  /* Note that this should set vertical padding only, since CodeMirror assumes
+       that horizontal padding will be set on CodeMirror pre */
+  padding: 0.4em 0;
+}
+.CodeMirror-linenumber {
+  padding: 0 8px 0 4px;
+}
+.CodeMirror-gutters {
+  border-bottom-left-radius: 2px;
+  border-top-left-radius: 2px;
+}
+.CodeMirror pre {
+  /* In CM3 this went to 4px from 0 in CM2. This sets horizontal padding only,
+    use .CodeMirror-lines for vertical */
+  padding: 0 0.4em;
+  border: 0;
+  border-radius: 0;
+}
+.CodeMirror-cursor {
+  border-left: 1.4px solid black;
+}
+@media screen and (min-width: 2138px) and (max-width: 4319px) {
+  .CodeMirror-cursor {
+    border-left: 2px solid black;
+  }
+}
+@media screen and (min-width: 4320px) {
+  .CodeMirror-cursor {
+    border-left: 4px solid black;
+  }
+}
+/*
+
+Original style from softwaremaniacs.org (c) Ivan Sagalaev <Maniac@SoftwareManiacs.Org>
+Adapted from GitHub theme
+
+*/
+.highlight-base {
+  color: #000;
+}
+.highlight-variable {
+  color: #000;
+}
+.highlight-variable-2 {
+  color: #1a1a1a;
+}
+.highlight-variable-3 {
+  color: #333333;
+}
+.highlight-string {
+  color: #BA2121;
+}
+.highlight-comment {
+  color: #408080;
+  font-style: italic;
+}
+.highlight-number {
+  color: #080;
+}
+.highlight-atom {
+  color: #88F;
+}
+.highlight-keyword {
+  color: #008000;
+  font-weight: bold;
+}
+.highlight-builtin {
+  color: #008000;
+}
+.highlight-error {
+  color: #f00;
+}
+.highlight-operator {
+  color: #AA22FF;
+  font-weight: bold;
+}
+.highlight-meta {
+  color: #AA22FF;
+}
+/* previously not defined, copying from default codemirror */
+.highlight-def {
+  color: #00f;
+}
+.highlight-string-2 {
+  color: #f50;
+}
+.highlight-qualifier {
+  color: #555;
+}
+.highlight-bracket {
+  color: #997;
+}
+.highlight-tag {
+  color: #170;
+}
+.highlight-attribute {
+  color: #00c;
+}
+.highlight-header {
+  color: blue;
+}
+.highlight-quote {
+  color: #090;
+}
+.highlight-link {
+  color: #00c;
+}
+/* apply the same style to codemirror */
+.cm-s-ipython span.cm-keyword {
+  color: #008000;
+  font-weight: bold;
+}
+.cm-s-ipython span.cm-atom {
+  color: #88F;
+}
+.cm-s-ipython span.cm-number {
+  color: #080;
+}
+.cm-s-ipython span.cm-def {
+  color: #00f;
+}
+.cm-s-ipython span.cm-variable {
+  color: #000;
+}
+.cm-s-ipython span.cm-operator {
+  color: #AA22FF;
+  font-weight: bold;
+}
+.cm-s-ipython span.cm-variable-2 {
+  color: #1a1a1a;
+}
+.cm-s-ipython span.cm-variable-3 {
+  color: #333333;
+}
+.cm-s-ipython span.cm-comment {
+  color: #408080;
+  font-style: italic;
+}
+.cm-s-ipython span.cm-string {
+  color: #BA2121;
+}
+.cm-s-ipython span.cm-string-2 {
+  color: #f50;
+}
+.cm-s-ipython span.cm-meta {
+  color: #AA22FF;
+}
+.cm-s-ipython span.cm-qualifier {
+  color: #555;
+}
+.cm-s-ipython span.cm-builtin {
+  color: #008000;
+}
+.cm-s-ipython span.cm-bracket {
+  color: #997;
+}
+.cm-s-ipython span.cm-tag {
+  color: #170;
+}
+.cm-s-ipython span.cm-attribute {
+  color: #00c;
+}
+.cm-s-ipython span.cm-header {
+  color: blue;
+}
+.cm-s-ipython span.cm-quote {
+  color: #090;
+}
+.cm-s-ipython span.cm-link {
+  color: #00c;
+}
+.cm-s-ipython span.cm-error {
+  color: #f00;
+}
+.cm-s-ipython span.cm-tab {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAMCAYAAAAkuj5RAAAAAXNSR0IArs4c6QAAAGFJREFUSMft1LsRQFAQheHPowAKoACx3IgEKtaEHujDjORSgWTH/ZOdnZOcM/sgk/kFFWY0qV8foQwS4MKBCS3qR6ixBJvElOobYAtivseIE120FaowJPN75GMu8j/LfMwNjh4HUpwg4LUAAAAASUVORK5CYII=);
+  background-position: right;
+  background-repeat: no-repeat;
+}
+div.output_wrapper {
+  /* this position must be relative to enable descendents to be absolute within it */
+  position: relative;
+  /* Old browsers */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: vertical;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: vertical;
+  box-align: stretch;
+  /* Modern browsers */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  z-index: 1;
+}
+/* class for the output area when it should be height-limited */
+div.output_scroll {
+  /* ideally, this would be max-height, but FF barfs all over that */
+  height: 24em;
+  /* FF needs this *and the wrapper* to specify full width, or it will shrinkwrap */
+  width: 100%;
+  overflow: auto;
+  border-radius: 2px;
+  -webkit-box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+  display: block;
+}
+/* output div while it is collapsed */
+div.output_collapsed {
+  margin: 0px;
+  padding: 0px;
+  /* Old browsers */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: vertical;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: vertical;
+  box-align: stretch;
+  /* Modern browsers */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+div.out_prompt_overlay {
+  height: 100%;
+  padding: 0px 0.4em;
+  position: absolute;
+  border-radius: 2px;
+}
+div.out_prompt_overlay:hover {
+  /* use inner shadow to get border that is computed the same on WebKit/FF */
+  -webkit-box-shadow: inset 0 0 1px #000;
+  box-shadow: inset 0 0 1px #000;
+  background: rgba(240, 240, 240, 0.5);
+}
+div.output_prompt {
+  color: #D84315;
+}
+/* This class is the outer container of all output sections. */
+div.output_area {
+  padding: 0px;
+  page-break-inside: avoid;
+  /* Old browsers */
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: horizontal;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: horizontal;
+  box-align: stretch;
+  /* Modern browsers */
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+div.output_area .MathJax_Display {
+  text-align: left !important;
+}
+div.output_area 
+div.output_area 
+div.output_area img,
+div.output_area svg {
+  max-width: 100%;
+  height: auto;
+}
+div.output_area img.unconfined,
+div.output_area svg.unconfined {
+  max-width: none;
+}
+div.output_area .mglyph > img {
+  max-width: none;
+}
+/* This is needed to protect the pre formating from global settings such
+   as that of bootstrap */
+.output {
+  /* Old browsers */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: vertical;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: vertical;
+  box-align: stretch;
+  /* Modern browsers */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+@media (max-width: 540px) {
+  div.output_area {
+    /* Old browsers */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-box-align: stretch;
+    display: -moz-box;
+    -moz-box-orient: vertical;
+    -moz-box-align: stretch;
+    display: box;
+    box-orient: vertical;
+    box-align: stretch;
+    /* Modern browsers */
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+div.output_area pre {
+  margin: 0;
+  padding: 1px 0 1px 0;
+  border: 0;
+  vertical-align: baseline;
+  color: black;
+  background-color: transparent;
+  border-radius: 0;
+}
+/* This class is for the output subarea inside the output_area and after
+   the prompt div. */
+div.output_subarea {
+  overflow-x: auto;
+  padding: 0.4em;
+  /* Old browsers */
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  box-flex: 1;
+  /* Modern browsers */
+  flex: 1;
+  max-width: calc(100% - 14ex);
+}
+div.output_scroll div.output_subarea {
+  overflow-x: visible;
+}
+/* The rest of the output_* classes are for special styling of the different
+   output types */
+/* all text output has this class: */
+div.output_text {
+  text-align: left;
+  color: #000;
+  /* This has to match that of the the CodeMirror class line-height below */
+  line-height: 1.21429em;
+}
+/* stdout/stderr are 'text' as well as 'stream', but execute_result/error are *not* streams */
+div.output_stderr {
+  background: #fdd;
+  /* very light red background for stderr */
+}
+div.output_latex {
+  text-align: left;
+}
+/* Empty output_javascript divs should have no height */
+div.output_javascript:empty {
+  padding: 0;
+}
+.js-error {
+  color: darkred;
+}
+/* raw_input styles */
+div.raw_input_container {
+  line-height: 1.21429em;
+  padding-top: 5px;
+}
+pre.raw_input_prompt {
+  /* nothing needed here. */
+}
+input.raw_input {
+  font-family: monospace;
+  font-size: inherit;
+  color: inherit;
+  width: auto;
+  /* make sure input baseline aligns with prompt */
+  vertical-align: baseline;
+  /* padding + margin = 0.5em between prompt and cursor */
+  padding: 0em 0.25em;
+  margin: 0em 0.25em;
+}
+input.raw_input:focus {
+  box-shadow: none;
+}
+p.p-space {
+  margin-bottom: 10px;
+}
+div.output_unrecognized {
+  padding: 5px;
+  font-weight: bold;
+  color: red;
+}
+div.output_unrecognized a {
+  color: inherit;
+  text-decoration: none;
+}
+div.output_unrecognized a:hover {
+  color: inherit;
+  text-decoration: none;
+}
+.rendered_html {
+  color: #000;
+  /* any extras will just be numbers: */
+}
+
+
+
+.rendered_html :link {
+  text-decoration: underline;
+}
+.rendered_html :visited {
+  text-decoration: underline;
+}
+
+
+
+
+
+
+.rendered_html h1:first-child {
+  margin-top: 0.538em;
+}
+.rendered_html h2:first-child {
+  margin-top: 0.636em;
+}
+.rendered_html h3:first-child {
+  margin-top: 0.777em;
+}
+.rendered_html h4:first-child {
+  margin-top: 1em;
+}
+.rendered_html h5:first-child {
+  margin-top: 1em;
+}
+.rendered_html h6:first-child {
+  margin-top: 1em;
+}
+.rendered_html ul:not(.list-inline),
+.rendered_html ol:not(.list-inline) {
+  padding-left: 2em;
+}
+
+
+
+
+
+
+
+
+.rendered_html * + ul {
+  margin-top: 1em;
+}
+.rendered_html * + ol {
+  margin-top: 1em;
+}
+
+
+
+
+
+.rendered_html pre,
+
+
+
+
+.rendered_html tr,
+.rendered_html th,
+
+
+.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+.rendered_html * + table {
+  margin-top: 1em;
+}
+
+.rendered_html * + p {
+  margin-top: 1em;
+}
+
+.rendered_html * + img {
+  margin-top: 1em;
+}
+.rendered_html img,
+
+.rendered_html img.unconfined,
+
+
+.rendered_html * + .alert {
+  margin-top: 1em;
+}
+[dir="rtl"] 
+div.text_cell {
+  /* Old browsers */
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: stretch;
+  display: -moz-box;
+  -moz-box-orient: horizontal;
+  -moz-box-align: stretch;
+  display: box;
+  box-orient: horizontal;
+  box-align: stretch;
+  /* Modern browsers */
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+@media (max-width: 540px) {
+  div.text_cell > div.prompt {
+    display: none;
+  }
+}
+div.text_cell_render {
+  /*font-family: "Helvetica Neue", Arial, Helvetica, Geneva, sans-serif;*/
+  outline: none;
+  resize: none;
+  width: inherit;
+  border-style: none;
+  padding: 0.5em 0.5em 0.5em 0.4em;
+  color: #000;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}
+a.anchor-link:link {
+  text-decoration: none;
+  padding: 0px 20px;
+  visibility: hidden;
+}
+h1:hover .anchor-link,
+h2:hover .anchor-link,
+h3:hover .anchor-link,
+h4:hover .anchor-link,
+h5:hover .anchor-link,
+h6:hover .anchor-link {
+  visibility: visible;
+}
+.text_cell.rendered .input_area {
+  display: none;
+}
+.text_cell.rendered 
+.text_cell.rendered .rendered_html tr,
+.text_cell.rendered .rendered_html th,
+.text_cell.rendered 
+.text_cell.unrendered .text_cell_render {
+  display: none;
+}
+.text_cell .dropzone .input_area {
+  border: 2px dashed #bababa;
+  margin: -1px;
+}
+.cm-header-1,
+.cm-header-2,
+.cm-header-3,
+.cm-header-4,
+.cm-header-5,
+.cm-header-6 {
+  font-weight: bold;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.cm-header-1 {
+  font-size: 185.7%;
+}
+.cm-header-2 {
+  font-size: 157.1%;
+}
+.cm-header-3 {
+  font-size: 128.6%;
+}
+.cm-header-4 {
+  font-size: 110%;
+}
+.cm-header-5 {
+  font-size: 100%;
+  font-style: italic;
+}
+.cm-header-6 {
+  font-size: 100%;
+  font-style: italic;
+}
+</style>
+<style type="text/css">.highlight .hll { background-color: #ffffcc }
+.highlight  { background: #f8f8f8; }
+.highlight .c { color: #408080; font-style: italic } /* Comment */
+.highlight .err { border: 1px solid #FF0000 } /* Error */
+.highlight .k { color: #008000; font-weight: bold } /* Keyword */
+.highlight .o { color: #666666 } /* Operator */
+.highlight .ch { color: #408080; font-style: italic } /* Comment.Hashbang */
+.highlight .cm { color: #408080; font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: #BC7A00 } /* Comment.Preproc */
+.highlight .cpf { color: #408080; font-style: italic } /* Comment.PreprocFile */
+.highlight .c1 { color: #408080; font-style: italic } /* Comment.Single */
+.highlight .cs { color: #408080; font-style: italic } /* Comment.Special */
+.highlight .gd { color: #A00000 } /* Generic.Deleted */
+.highlight .ge { font-style: italic } /* Generic.Emph */
+.highlight .gr { color: #FF0000 } /* Generic.Error */
+.highlight .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.highlight .gi { color: #00A000 } /* Generic.Inserted */
+.highlight .go { color: #888888 } /* Generic.Output */
+.highlight .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.highlight .gs { font-weight: bold } /* Generic.Strong */
+.highlight .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.highlight .gt { color: #0044DD } /* Generic.Traceback */
+.highlight .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.highlight .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.highlight .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.highlight .kp { color: #008000 } /* Keyword.Pseudo */
+.highlight .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.highlight .kt { color: #B00040 } /* Keyword.Type */
+.highlight .m { color: #666666 } /* Literal.Number */
+.highlight .s { color: #BA2121 } /* Literal.String */
+.highlight .na { color: #7D9029 } /* Name.Attribute */
+.highlight .nb { color: #008000 } /* Name.Builtin */
+.highlight .nc { color: #0000FF; font-weight: bold } /* Name.Class */
+.highlight .no { color: #880000 } /* Name.Constant */
+.highlight .nd { color: #AA22FF } /* Name.Decorator */
+.highlight .ni { color: #999999; font-weight: bold } /* Name.Entity */
+.highlight .ne { color: #D2413A; font-weight: bold } /* Name.Exception */
+.highlight .nf { color: #0000FF } /* Name.Function */
+.highlight .nl { color: #A0A000 } /* Name.Label */
+.highlight .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+.highlight .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.highlight .nv { color: #19177C } /* Name.Variable */
+.highlight .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
+.highlight .w { color: #bbbbbb } /* Text.Whitespace */
+.highlight .mb { color: #666666 } /* Literal.Number.Bin */
+.highlight .mf { color: #666666 } /* Literal.Number.Float */
+.highlight .mh { color: #666666 } /* Literal.Number.Hex */
+.highlight .mi { color: #666666 } /* Literal.Number.Integer */
+.highlight .mo { color: #666666 } /* Literal.Number.Oct */
+.highlight .sa { color: #BA2121 } /* Literal.String.Affix */
+.highlight .sb { color: #BA2121 } /* Literal.String.Backtick */
+.highlight .sc { color: #BA2121 } /* Literal.String.Char */
+.highlight .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.highlight .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.highlight .s2 { color: #BA2121 } /* Literal.String.Double */
+.highlight .se { color: #BB6622; font-weight: bold } /* Literal.String.Escape */
+.highlight .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.highlight .si { color: #BB6688; font-weight: bold } /* Literal.String.Interpol */
+.highlight .sx { color: #008000 } /* Literal.String.Other */
+.highlight .sr { color: #BB6688 } /* Literal.String.Regex */
+.highlight .s1 { color: #BA2121 } /* Literal.String.Single */
+.highlight .ss { color: #19177C } /* Literal.String.Symbol */
+.highlight .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.highlight .fm { color: #0000FF } /* Name.Function.Magic */
+.highlight .vc { color: #19177C } /* Name.Variable.Class */
+.highlight .vg { color: #19177C } /* Name.Variable.Global */
+.highlight .vi { color: #19177C } /* Name.Variable.Instance */
+.highlight .vm { color: #19177C } /* Name.Variable.Magic */
+.highlight .il { color: #666666 } /* Literal.Number.Integer.Long */</style><div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="LZ78">LZ78<a class="anchor-link" href="#LZ78">&#182;</a></h1><p>The lempel-zip compression algorithm proposed in 1978, also called LZ78, processes a text $T[1,n]$ from left to right and cuts it into $z$ substrings, called <em>phrases</em>. Navarro, in Compact Data Structures book, defined the algorithm in plain english in a simple way:</p>
+<blockquote><p>"As the text is parsed, each new phrase is extended as much as possible to the right as long as it matches <strong>some previous phrase</strong>, and then next the new character (the mismatched one) is also included."</p>
+</blockquote>
+<p>This whole process is called the parsing of $T$. A trie is a data structure that can be used to store the parsing results. Basically, a trie is a tree that holds every suffix of a word/text. To spell the suffix from a trie, we traverse it from the root to a leaf outputting the label in the edges found in the path. A trie is usefull in string matching because when comparing a word of size $m$ with a text of size $n$ in the "brute force" way we must perform $m*n$ comparisons, while with the aid of the trie the number of comparisons is the size of the word to be mathed ($m$). If you want to learn more about tries in the context of string matching watch the excelent lecture from Ben Langmead. In fact, I'll use his code as base to the LZ78 python implementation parser.</p>
+<p>Be aware that the trie used in LZ78 implementation will not hold every suffix but every node in it represents a phrase (except the root node). Thus, at the end it has $z$ nodes plus the root and each node has a number corresponding to its phrase. I'll put the python implementation of the LZ78 trie bellow based on Ben Langsmead lecture about suffix trie with minor modifications. (BTW his lectures are excelent and I truly recommend them). Then, after the codes we'll give a step by step example. But first, lets load some ipython magics to draw the tries on the notebook using <a href="https://pt.wikipedia.org/wiki/DOT">dot format</a>.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span> wget -q https://raw.github.com/cjdrake/ipython-magic/master/gvmagic.py
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> gvmagic
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">LZ78Trie</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+  <span class="k">class</span> <span class="nc">Node</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lab</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">lab</span> <span class="o">=</span> <span class="n">lab</span> <span class="c1"># label on path leading to this node</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># outgoing edges; maps characters to nodes</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">idx</span> <span class="o">=</span> <span class="n">idx</span>
+  
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+    <span class="n">t</span> <span class="o">+=</span> <span class="s1">&#39;$&#39;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Node</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+      <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span>
+      <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">t</span><span class="p">[</span><span class="n">i</span><span class="p">:]:</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">out</span><span class="p">:</span>
+          <span class="n">cur</span><span class="o">.</span><span class="n">out</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Node</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">j</span><span class="p">)</span>
+          <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+          <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+          <span class="k">break</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">out</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+
+  <span class="k">def</span> <span class="nf">followPath</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">out</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+      <span class="n">cur</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">out</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">cur</span>
+  
+  
+  <span class="k">def</span> <span class="nf">has_substring</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Return true if s appears as a substring of t &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">follow_path</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+  
+  <span class="k">def</span> <span class="nf">to_dot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">drawend</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+      <span class="sd">&quot;&quot;&quot; Return dot representation of trie to make a picture &quot;&quot;&quot;</span>
+      <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+      <span class="k">def</span> <span class="nf">_to_dot_helper</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">parid</span><span class="p">,</span> <span class="n">drawend</span><span class="p">):</span>
+          <span class="n">childid</span> <span class="o">=</span> <span class="n">parid</span>
+          <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<span class="c1">#              print(c, child)</span>
+              <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">lab</span> <span class="o">!=</span> <span class="s1">&#39;$&#39;</span> <span class="ow">or</span> <span class="n">drawend</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  </span><span class="si">%d</span><span class="s1"> -&gt; </span><span class="si">%d</span><span class="s1"> [ label=&quot;</span><span class="si">%s</span><span class="s1">&quot; ];&#39;</span> <span class="o">%</span> 
+                             <span class="p">(</span><span class="n">parid</span><span class="p">,</span> <span class="n">childid</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">lab</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                  <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  </span><span class="si">{}</span><span class="s1"> [label=&quot;</span><span class="si">{}</span><span class="s1">&quot;];&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">childid</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">idx</span><span class="p">))</span>
+              <span class="n">childid</span> <span class="o">=</span> <span class="n">_to_dot_helper</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">childid</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">drawend</span><span class="p">)</span>
+          <span class="k">return</span> <span class="n">childid</span>
+      <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;digraph &quot;Suffix trie&quot; {&#39;</span><span class="p">)</span>
+      <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  node [shape=circle label=&quot;&quot;];&#39;</span><span class="p">)</span>
+      <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  0 [label=&quot;</span><span class="si">{}</span><span class="s1">&quot;];&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">idx</span><span class="p">))</span>
+      <span class="n">_to_dot_helper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">drawend</span><span class="p">)</span>
+      <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;}&#39;</span><span class="p">)</span>
+      <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We show the LZ78 trie example for the text $T=xabxaxa\$$. The parsing begins scanning $T$ for every position $i$, proceeding as follows:</p>
+<ul>
+<li>for $i=0$, there're no previous found phrase, so this is the first time we see the character $T[0]=x$. We append $(0,x)$ to the codded output $out$. Now $out=(0,x)$ and the trie has been augmented with the phrase $x$ with number 1.</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">dotstr</span> LZ78Trie(&quot;x&quot;).to_dot(False)
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+<div class="output_svg output_subarea ">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Suffix trie Pages: 1 -->
+<svg width="44pt" height="131pt"
+ viewBox="0.00 0.00 44.00 131.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 127)">
+<title>Suffix trie</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-127 40,-127 40,4 -4,4"/>
+<!-- 0 -->
+<g id="node1" class="node">
+<title>0</title>
+<ellipse fill="none" stroke="#000000" cx="18" cy="-105" rx="18" ry="18"/>
+<text text-anchor="middle" x="18" y="-101.3" font-family="Times,serif" font-size="14.00" fill="#000000">0</text>
+</g>
+<!-- 1 -->
+<g id="node2" class="node">
+<title>1</title>
+<ellipse fill="none" stroke="#000000" cx="18" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="18" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">1</text>
+</g>
+<!-- 0&#45;&gt;1 -->
+<g id="edge1" class="edge">
+<title>0&#45;&gt;1</title>
+<path fill="none" stroke="#000000" d="M18,-86.9735C18,-75.1918 18,-59.5607 18,-46.1581"/>
+<polygon fill="#000000" stroke="#000000" points="21.5001,-46.0033 18,-36.0034 14.5001,-46.0034 21.5001,-46.0033"/>
+<text text-anchor="middle" x="22" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">x</text>
+</g>
+</g>
+</svg>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>next, for $i=1$, there's no longest prefix of $T[1,7]=abxaxa$ already seen. Therefore, $T[1]=a$ yields a new phrase numbered 2 and $out=(0,x)(0,a)$.</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">dotstr</span> LZ78Trie(&quot;xa&quot;).to_dot(False)
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+<div class="output_svg output_subarea ">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Suffix trie Pages: 1 -->
+<svg width="98pt" height="131pt"
+ viewBox="0.00 0.00 98.00 131.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 127)">
+<title>Suffix trie</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-127 94,-127 94,4 -4,4"/>
+<!-- 0 -->
+<g id="node1" class="node">
+<title>0</title>
+<ellipse fill="none" stroke="#000000" cx="45" cy="-105" rx="18" ry="18"/>
+<text text-anchor="middle" x="45" y="-101.3" font-family="Times,serif" font-size="14.00" fill="#000000">0</text>
+</g>
+<!-- 1 -->
+<g id="node2" class="node">
+<title>1</title>
+<ellipse fill="none" stroke="#000000" cx="18" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="18" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">1</text>
+</g>
+<!-- 0&#45;&gt;1 -->
+<g id="edge1" class="edge">
+<title>0&#45;&gt;1</title>
+<path fill="none" stroke="#000000" d="M39.5361,-87.3943C35.7787,-75.287 30.7155,-58.972 26.4424,-45.2034"/>
+<polygon fill="#000000" stroke="#000000" points="29.6704,-43.7959 23.3636,-35.2827 22.9849,-45.8707 29.6704,-43.7959"/>
+<text text-anchor="middle" x="38" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">x</text>
+</g>
+<!-- 2 -->
+<g id="node3" class="node">
+<title>2</title>
+<ellipse fill="none" stroke="#000000" cx="72" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="72" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">2</text>
+</g>
+<!-- 0&#45;&gt;2 -->
+<g id="edge2" class="edge">
+<title>0&#45;&gt;2</title>
+<path fill="none" stroke="#000000" d="M50.4639,-87.3943C54.2213,-75.287 59.2845,-58.972 63.5576,-45.2034"/>
+<polygon fill="#000000" stroke="#000000" points="67.0151,-45.8707 66.6364,-35.2827 60.3296,-43.7959 67.0151,-45.8707"/>
+<text text-anchor="middle" x="63.5" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">a</text>
+</g>
+</g>
+</svg>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>next, for $i=2$, we have the same situation before but the new phrase is $b$ with number 3.</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">dotstr</span> LZ78Trie(&quot;xab&quot;).to_dot(False)
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+<div class="output_svg output_subarea ">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Suffix trie Pages: 1 -->
+<svg width="152pt" height="131pt"
+ viewBox="0.00 0.00 152.00 131.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 127)">
+<title>Suffix trie</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-127 148,-127 148,4 -4,4"/>
+<!-- 0 -->
+<g id="node1" class="node">
+<title>0</title>
+<ellipse fill="none" stroke="#000000" cx="72" cy="-105" rx="18" ry="18"/>
+<text text-anchor="middle" x="72" y="-101.3" font-family="Times,serif" font-size="14.00" fill="#000000">0</text>
+</g>
+<!-- 1 -->
+<g id="node2" class="node">
+<title>1</title>
+<ellipse fill="none" stroke="#000000" cx="18" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="18" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">1</text>
+</g>
+<!-- 0&#45;&gt;1 -->
+<g id="edge1" class="edge">
+<title>0&#45;&gt;1</title>
+<path fill="none" stroke="#000000" d="M62.3459,-89.4461C54.2062,-76.3322 42.4192,-57.342 33.0429,-42.2358"/>
+<polygon fill="#000000" stroke="#000000" points="35.818,-40.0698 27.5705,-33.4192 29.8705,-43.7614 35.818,-40.0698"/>
+<text text-anchor="middle" x="53" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">x</text>
+</g>
+<!-- 2 -->
+<g id="node3" class="node">
+<title>2</title>
+<ellipse fill="none" stroke="#000000" cx="72" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="72" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">2</text>
+</g>
+<!-- 0&#45;&gt;2 -->
+<g id="edge2" class="edge">
+<title>0&#45;&gt;2</title>
+<path fill="none" stroke="#000000" d="M72,-86.9735C72,-75.1918 72,-59.5607 72,-46.1581"/>
+<polygon fill="#000000" stroke="#000000" points="75.5001,-46.0033 72,-36.0034 68.5001,-46.0034 75.5001,-46.0033"/>
+<text text-anchor="middle" x="75.5" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">a</text>
+</g>
+<!-- 3 -->
+<g id="node4" class="node">
+<title>3</title>
+<ellipse fill="none" stroke="#000000" cx="126" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="126" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">3</text>
+</g>
+<!-- 0&#45;&gt;3 -->
+<g id="edge3" class="edge">
+<title>0&#45;&gt;3</title>
+<path fill="none" stroke="#000000" d="M81.6541,-89.4461C89.7938,-76.3322 101.5808,-57.342 110.9571,-42.2358"/>
+<polygon fill="#000000" stroke="#000000" points="114.1295,-43.7614 116.4295,-33.4192 108.182,-40.0698 114.1295,-43.7614"/>
+<text text-anchor="middle" x="106" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">b</text>
+</g>
+</g>
+</svg>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>next, for $i=3$, we have $T=𝑥𝑎𝑥𝑎\$$ and if we walk from root to node number 1 we can see the already phrase $x$. Then, we can encode the prefix $xa$ as $(1,a)$ with the number corresponding to the previous phrase and the next character in the text. We create the node numbered 4 in trie to store the new phrase $xa$.</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">dotstr</span> LZ78Trie(&quot;xabxa&quot;).to_dot(False)
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+<div class="output_svg output_subarea ">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Suffix trie Pages: 1 -->
+<svg width="152pt" height="218pt"
+ viewBox="0.00 0.00 152.00 218.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 214)">
+<title>Suffix trie</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-214 148,-214 148,4 -4,4"/>
+<!-- 0 -->
+<g id="node1" class="node">
+<title>0</title>
+<ellipse fill="none" stroke="#000000" cx="72" cy="-192" rx="18" ry="18"/>
+<text text-anchor="middle" x="72" y="-188.3" font-family="Times,serif" font-size="14.00" fill="#000000">0</text>
+</g>
+<!-- 1 -->
+<g id="node2" class="node">
+<title>1</title>
+<ellipse fill="none" stroke="#000000" cx="18" cy="-105" rx="18" ry="18"/>
+<text text-anchor="middle" x="18" y="-101.3" font-family="Times,serif" font-size="14.00" fill="#000000">1</text>
+</g>
+<!-- 0&#45;&gt;1 -->
+<g id="edge1" class="edge">
+<title>0&#45;&gt;1</title>
+<path fill="none" stroke="#000000" d="M62.3459,-176.4461C54.2062,-163.3322 42.4192,-144.342 33.0429,-129.2358"/>
+<polygon fill="#000000" stroke="#000000" points="35.818,-127.0698 27.5705,-120.4192 29.8705,-130.7614 35.818,-127.0698"/>
+<text text-anchor="middle" x="53" y="-144.8" font-family="Times,serif" font-size="14.00" fill="#000000">x</text>
+</g>
+<!-- 3 -->
+<g id="node4" class="node">
+<title>3</title>
+<ellipse fill="none" stroke="#000000" cx="72" cy="-105" rx="18" ry="18"/>
+<text text-anchor="middle" x="72" y="-101.3" font-family="Times,serif" font-size="14.00" fill="#000000">2</text>
+</g>
+<!-- 0&#45;&gt;3 -->
+<g id="edge3" class="edge">
+<title>0&#45;&gt;3</title>
+<path fill="none" stroke="#000000" d="M72,-173.9735C72,-162.1918 72,-146.5607 72,-133.1581"/>
+<polygon fill="#000000" stroke="#000000" points="75.5001,-133.0033 72,-123.0034 68.5001,-133.0034 75.5001,-133.0033"/>
+<text text-anchor="middle" x="75.5" y="-144.8" font-family="Times,serif" font-size="14.00" fill="#000000">a</text>
+</g>
+<!-- 4 -->
+<g id="node5" class="node">
+<title>4</title>
+<ellipse fill="none" stroke="#000000" cx="126" cy="-105" rx="18" ry="18"/>
+<text text-anchor="middle" x="126" y="-101.3" font-family="Times,serif" font-size="14.00" fill="#000000">3</text>
+</g>
+<!-- 0&#45;&gt;4 -->
+<g id="edge4" class="edge">
+<title>0&#45;&gt;4</title>
+<path fill="none" stroke="#000000" d="M81.6541,-176.4461C89.7938,-163.3322 101.5808,-144.342 110.9571,-129.2358"/>
+<polygon fill="#000000" stroke="#000000" points="114.1295,-130.7614 116.4295,-120.4192 108.182,-127.0698 114.1295,-130.7614"/>
+<text text-anchor="middle" x="106" y="-144.8" font-family="Times,serif" font-size="14.00" fill="#000000">b</text>
+</g>
+<!-- 2 -->
+<g id="node3" class="node">
+<title>2</title>
+<ellipse fill="none" stroke="#000000" cx="18" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="18" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">4</text>
+</g>
+<!-- 1&#45;&gt;2 -->
+<g id="edge2" class="edge">
+<title>1&#45;&gt;2</title>
+<path fill="none" stroke="#000000" d="M18,-86.9735C18,-75.1918 18,-59.5607 18,-46.1581"/>
+<polygon fill="#000000" stroke="#000000" points="21.5001,-46.0033 18,-36.0034 14.5001,-46.0034 21.5001,-46.0033"/>
+<text text-anchor="middle" x="21.5" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">a</text>
+</g>
+</g>
+</svg>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>next, we have $i=5$, because we skip 2 positions due the previous phrase $xa$. And, for $i=5$, we notice that $T[5,7]=xa\$$ meaning that the substring $xa$ was already seen in the set of phrases. Therefore, we encode it has $(4,\$)$ and the algorithm ends.</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">dotstr</span> LZ78Trie(&quot;xabxaxa$&quot;).to_dot(True)
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+<div class="output_svg output_subarea ">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Suffix trie Pages: 1 -->
+<svg width="206pt" height="305pt"
+ viewBox="0.00 0.00 206.00 305.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 301)">
+<title>Suffix trie</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-301 202,-301 202,4 -4,4"/>
+<!-- 0 -->
+<g id="node1" class="node">
+<title>0</title>
+<ellipse fill="none" stroke="#000000" cx="99" cy="-279" rx="18" ry="18"/>
+<text text-anchor="middle" x="99" y="-275.3" font-family="Times,serif" font-size="14.00" fill="#000000">0</text>
+</g>
+<!-- 1 -->
+<g id="node2" class="node">
+<title>1</title>
+<ellipse fill="none" stroke="#000000" cx="18" cy="-192" rx="18" ry="18"/>
+<text text-anchor="middle" x="18" y="-188.3" font-family="Times,serif" font-size="14.00" fill="#000000">1</text>
+</g>
+<!-- 0&#45;&gt;1 -->
+<g id="edge1" class="edge">
+<title>0&#45;&gt;1</title>
+<path fill="none" stroke="#000000" d="M86.6978,-265.7866C73.6144,-251.734 52.7369,-229.31 37.4276,-212.8667"/>
+<polygon fill="#000000" stroke="#000000" points="39.7938,-210.2718 30.4179,-205.3378 34.6705,-215.0417 39.7938,-210.2718"/>
+<text text-anchor="middle" x="68" y="-231.8" font-family="Times,serif" font-size="14.00" fill="#000000">x</text>
+</g>
+<!-- 4 -->
+<g id="node5" class="node">
+<title>4</title>
+<ellipse fill="none" stroke="#000000" cx="72" cy="-192" rx="18" ry="18"/>
+<text text-anchor="middle" x="72" y="-188.3" font-family="Times,serif" font-size="14.00" fill="#000000">2</text>
+</g>
+<!-- 0&#45;&gt;4 -->
+<g id="edge4" class="edge">
+<title>0&#45;&gt;4</title>
+<path fill="none" stroke="#000000" d="M93.5361,-261.3943C89.7787,-249.287 84.7155,-232.972 80.4424,-219.2034"/>
+<polygon fill="#000000" stroke="#000000" points="83.6704,-217.7959 77.3636,-209.2827 76.9849,-219.8707 83.6704,-217.7959"/>
+<text text-anchor="middle" x="91.5" y="-231.8" font-family="Times,serif" font-size="14.00" fill="#000000">a</text>
+</g>
+<!-- 5 -->
+<g id="node6" class="node">
+<title>5</title>
+<ellipse fill="none" stroke="#000000" cx="126" cy="-192" rx="18" ry="18"/>
+<text text-anchor="middle" x="126" y="-188.3" font-family="Times,serif" font-size="14.00" fill="#000000">3</text>
+</g>
+<!-- 0&#45;&gt;5 -->
+<g id="edge5" class="edge">
+<title>0&#45;&gt;5</title>
+<path fill="none" stroke="#000000" d="M104.4639,-261.3943C108.2213,-249.287 113.2845,-232.972 117.5576,-219.2034"/>
+<polygon fill="#000000" stroke="#000000" points="121.0151,-219.8707 120.6364,-209.2827 114.3296,-217.7959 121.0151,-219.8707"/>
+<text text-anchor="middle" x="118" y="-231.8" font-family="Times,serif" font-size="14.00" fill="#000000">b</text>
+</g>
+<!-- 6 -->
+<g id="node7" class="node">
+<title>6</title>
+<ellipse fill="none" stroke="#000000" cx="180" cy="-192" rx="18" ry="18"/>
+<text text-anchor="middle" x="180" y="-188.3" font-family="Times,serif" font-size="14.00" fill="#000000">6</text>
+</g>
+<!-- 0&#45;&gt;6 -->
+<g id="edge6" class="edge">
+<title>0&#45;&gt;6</title>
+<path fill="none" stroke="#000000" d="M111.3022,-265.7866C124.3856,-251.734 145.2631,-229.31 160.5724,-212.8667"/>
+<polygon fill="#000000" stroke="#000000" points="163.3295,-215.0417 167.5821,-205.3378 158.2062,-210.2718 163.3295,-215.0417"/>
+<text text-anchor="middle" x="148" y="-231.8" font-family="Times,serif" font-size="14.00" fill="#000000">$</text>
+</g>
+<!-- 2 -->
+<g id="node3" class="node">
+<title>2</title>
+<ellipse fill="none" stroke="#000000" cx="18" cy="-105" rx="18" ry="18"/>
+<text text-anchor="middle" x="18" y="-101.3" font-family="Times,serif" font-size="14.00" fill="#000000">4</text>
+</g>
+<!-- 1&#45;&gt;2 -->
+<g id="edge2" class="edge">
+<title>1&#45;&gt;2</title>
+<path fill="none" stroke="#000000" d="M18,-173.9735C18,-162.1918 18,-146.5607 18,-133.1581"/>
+<polygon fill="#000000" stroke="#000000" points="21.5001,-133.0033 18,-123.0034 14.5001,-133.0034 21.5001,-133.0033"/>
+<text text-anchor="middle" x="21.5" y="-144.8" font-family="Times,serif" font-size="14.00" fill="#000000">a</text>
+</g>
+<!-- 3 -->
+<g id="node4" class="node">
+<title>3</title>
+<ellipse fill="none" stroke="#000000" cx="18" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="18" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">5</text>
+</g>
+<!-- 2&#45;&gt;3 -->
+<g id="edge3" class="edge">
+<title>2&#45;&gt;3</title>
+<path fill="none" stroke="#000000" d="M18,-86.9735C18,-75.1918 18,-59.5607 18,-46.1581"/>
+<polygon fill="#000000" stroke="#000000" points="21.5001,-46.0033 18,-36.0034 14.5001,-46.0034 21.5001,-46.0033"/>
+<text text-anchor="middle" x="22" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">$</text>
+</g>
+</g>
+</svg>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The encoded string is $out=(0,x)(0,a)(0,b)(1,a)(4,\$)$ which is bigger than the initial text $T$. But this behaviour is the oposite when the length of the text gets bigger and bigger. Note from our example that the LZ78 algorithm is not suitable to pinpoint repetions. Despite the substring $T[3,5]=xa$ have been seen in $T[0,2]$, the algorithm didn't spot it. The previous variant of lempel-ziv, called LZ76 and almost ever confused with $LZ77$ is best appopriate to this kind of situations, i.e. to compress repetitive texts.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>It cannot produce less than $\sqrt{n}$ phrases, even in the text $T=a^n\$$. Why ??</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="LZ76">LZ76<a class="anchor-link" href="#LZ76">&#182;</a></h2><p>The Lempel-Ziv 1976 compression is similar to LZ78, in which the text is parsed into a sequence of phrases. While in LZ78 the next phrase to be find after parsing $T[1,i]$ must be a previous found phrase plus the symbol following it, in LZ76 the phrase is the longest prefix of $T[i,n]$ that has already appeared in the text plus the symbol following it.</p>
+<p>Often LZ76 is mistaken with LZ77, a variant that restricts the length $l$ of the sliding window $T[i-l,i]$ from where the phrases can be detected. This constraint simplifies the finding and enconding the phrases and has the drawback to restrict the search to "nearby" regions in the text.</p>
+<p>Let's borrow the mathematical notation used by Gusfield in the classic book <em>Algorithms on Strings, Trees and Sequences</em> to define the output of LZ76 algorithm. According to it, let $Prior_{i}$ be the longest prefix the longest prefix of $T[i,n]$ that also occurs as a substring before the position $i$ in text $T$.</p>
+<p>Then, for any position $i$ in $T$, let $l_i$ be length of $Prior_{i}$ and $s_i$ the starting position of the left-most copy of $Prior_{i}$ in $T[0, i-1]$ (using python counting style which is 0-based, i.e. the first character in a string is in 0-th position).</p>
+<p>For example, for $T=xabxaxa\$$ the $Prior<em>{3}$ is $xa$ leading to $l</em>{3}=2$ and $s_{3}=0$. The LZ76 algorithm encode it by the pair $(s_i, l_i)$, pointing to the previous ocurrence of a substring.</p>
+<p>The LZ76 phrases can be found in linear time with the help of a suffix tree (Rodeh et al, 1981), but this structure requires a lot of extra space, which hampers the parsing of large texts.</p>
+<h3 id="The-suffix-tree-data-structure">The suffix tree data structure<a class="anchor-link" href="#The-suffix-tree-data-structure">&#182;</a></h3><p>The suffix tree (ST) it's nothing more than a compact trie. If we concatenate all the single child nodes into the same node we build a suffix tree from the trie. This is the most naive method to build a suffix tree, requires $O(m^2)$ time and $O(m^2)$ space. A more clever way to build a suffix tree using $O(m)$ space and $O(m^2)$ time was described by Gusfield in ASTS book, section 5.4. There're the Ukkonen's method to build an ST in linear time and space, but it's a detailed algorithm that I'll not cover here. If you wish more infos about Ukkonens method check this excelent <a href="https://marknelson.us/posts/1996/08/01/suffix-trees.html">blogpost</a>.</p>
+<p>We list the Naive methods to build a suffix tree:</p>
+<ol>
+<li><p>Build the ST from the suffix trie data structure. This method takes $O(m^2)$ time and $O(m^2)$ space.</p>
+</li>
+<li><p>Recursively augment the tree starting from a two-edge tree representing the longest suffix. Then, insert the 2nd longest suffix. Then, the 3rd longest suffix. And so on. It takes $O(m)$ space but still $O(m^2)$ time (Gusfield, section 5.4).</p>
+</li>
+</ol>
+<p>The suffix tree implemented on this post was borrowed from <a href="http://www.langmead-lab.org/teaching-materials/">Ben Langmead teaching materials</a> and follows the Gusfield algorithm presented in section 5.4. I slightly modified the implementation to accomodate the $m$ suffix numbers in the nodes, where $m$ is the number of suffixes from text $T$. This number will be important in the implementation of the LZ76 parser using suffix trees.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">SuffixTree</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+  <span class="k">class</span> <span class="nc">Node</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lab</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">lab</span> <span class="o">=</span> <span class="n">lab</span> <span class="c1"># label on path leading to this node</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># outgoing edges; maps characters to nodes</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">idx</span> <span class="o">=</span> <span class="n">idx</span>
+      
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+    <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;$&#39;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Node</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">out</span><span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Node</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="c1"># trie for just longest suffix</span>
+    <span class="c1"># add the rest of the suffixes, from longest to shortest</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)):</span>
+      <span class="c1"># start at root; we&#39;ll walking down as far as we can go</span>
+      <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span>
+      <span class="n">j</span> <span class="o">=</span> <span class="n">i</span>
+      <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">out</span><span class="p">:</span>
+          <span class="n">child</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">out</span><span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span>
+          <span class="n">lab</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">lab</span>
+          <span class="c1"># walk along edge until we exhaust edge label or until we mismatch</span>
+          <span class="n">k</span> <span class="o">=</span> <span class="n">j</span><span class="o">+</span><span class="mi">1</span>
+          <span class="k">while</span> <span class="n">k</span><span class="o">-</span><span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">lab</span><span class="p">)</span> <span class="ow">and</span> <span class="n">s</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="n">lab</span><span class="p">[</span><span class="n">k</span><span class="o">-</span><span class="n">j</span><span class="p">]:</span>
+            <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+          <span class="k">if</span> <span class="n">k</span><span class="o">-</span><span class="n">j</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">lab</span><span class="p">):</span>
+            <span class="n">cur</span> <span class="o">=</span> <span class="n">child</span> <span class="c1"># we exhausted the edge</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">k</span>
+          <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># we fell off in middle of edge</span>
+            <span class="n">cExist</span><span class="p">,</span> <span class="n">cNew</span> <span class="o">=</span> <span class="n">lab</span><span class="p">[</span><span class="n">k</span><span class="o">-</span><span class="n">j</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="c1"># create &quot;mid&quot;: new node bisecting edge</span>
+            <span class="n">mid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Node</span><span class="p">(</span><span class="n">lab</span><span class="p">[:</span><span class="n">k</span><span class="o">-</span><span class="n">j</span><span class="p">],</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">mid</span><span class="o">.</span><span class="n">out</span><span class="p">[</span><span class="n">cNew</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Node</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">k</span><span class="p">:],</span> <span class="n">i</span><span class="p">)</span>
+            <span class="c1"># original child becomes mid&#39;s child</span>
+            <span class="n">mid</span><span class="o">.</span><span class="n">out</span><span class="p">[</span><span class="n">cExist</span><span class="p">]</span> <span class="o">=</span> <span class="n">child</span>
+            <span class="c1"># original child&#39;s label is curtailed</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">lab</span> <span class="o">=</span> <span class="n">lab</span><span class="p">[</span><span class="n">k</span><span class="o">-</span><span class="n">j</span><span class="p">:]</span>
+            <span class="c1"># mid becomes new child of original parent</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">out</span><span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span> <span class="o">=</span> <span class="n">mid</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="c1"># Fell off tree at a node: make new edge hanging off it</span>
+          <span class="n">cur</span><span class="o">.</span><span class="n">out</span><span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Node</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">:],</span><span class="n">i</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">followPath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Follow path given by s.  If we fall off tree, return None.  If we</span>
+<span class="sd">        finish mid-edge, return (node, offset) where &#39;node&#39; is child and</span>
+<span class="sd">        &#39;offset&#39; is label offset.  If we finish on a node, return (node,</span>
+<span class="sd">        None). &quot;&quot;&quot;</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">out</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="c1"># fell off at a node</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">out</span><span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+        <span class="n">lab</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">lab</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span>
+        <span class="k">while</span> <span class="n">j</span><span class="o">-</span><span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">lab</span><span class="p">)</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="ow">and</span> <span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">lab</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">j</span><span class="o">-</span><span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">lab</span><span class="p">):</span>
+            <span class="n">cur</span> <span class="o">=</span> <span class="n">child</span> <span class="c1"># exhausted edge</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">j</span>
+        <span class="k">elif</span> <span class="n">j</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">j</span><span class="o">-</span><span class="n">i</span><span class="p">)</span> <span class="c1"># exhausted query string in middle of edge</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="c1"># fell off in the middle of the edge</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">cur</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="c1"># exhausted query string at internal node</span>
+
+  <span class="k">def</span> <span class="nf">hasSubstring</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+      <span class="sd">&quot;&quot;&quot; Return true iff s appears as a substring &quot;&quot;&quot;</span>
+      <span class="n">node</span><span class="p">,</span> <span class="n">off</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">followPath</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+      <span class="k">return</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+  <span class="k">def</span> <span class="nf">hasSuffix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+      <span class="sd">&quot;&quot;&quot; Return true iff s is a suffix &quot;&quot;&quot;</span>
+      <span class="n">node</span><span class="p">,</span> <span class="n">off</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">followPath</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+          <span class="k">return</span> <span class="kc">False</span> <span class="c1"># fell off the tree</span>
+      <span class="k">if</span> <span class="n">off</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+          <span class="c1"># finished on top of a node</span>
+          <span class="k">return</span> <span class="s1">&#39;$&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">out</span>
+      <span class="k">else</span><span class="p">:</span>
+          <span class="c1"># finished at offset &#39;off&#39; within an edge leading to &#39;node&#39;</span>
+          <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">lab</span><span class="p">[</span><span class="n">off</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;$&#39;</span>
+
+  <span class="k">def</span> <span class="nf">_iterate_over_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_to_iter</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+          <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Node lab=</span><span class="si">{}</span><span class="s2">, id=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">lab</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">idx</span><span class="p">))</span>
+          <span class="n">_to_iter</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+    <span class="n">_to_iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
+  
+  <span class="k">def</span> <span class="nf">numerate_internal_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">preorder_traversal</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
+      <span class="k">yield</span> <span class="n">root</span>
+      <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">yield from</span> <span class="n">preorder_traversal</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">preorder_traversal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
+    
+  <span class="k">def</span> <span class="nf">to_dot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="sd">&quot;&quot;&quot; Return dot representation of trie to make a picture &quot;&quot;&quot;</span>
+      <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+      <span class="k">def</span> <span class="nf">_to_dot_helper</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">parid</span><span class="p">):</span>
+          <span class="n">childid</span> <span class="o">=</span> <span class="n">parid</span>
+          <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<span class="c1">#              print(c, child)</span>
+              <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  </span><span class="si">%d</span><span class="s1"> -&gt; </span><span class="si">%d</span><span class="s1"> [ label=&quot;</span><span class="si">%s</span><span class="s1">&quot; ];&#39;</span> <span class="o">%</span> 
+                           <span class="p">(</span><span class="n">parid</span><span class="p">,</span> <span class="n">childid</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">lab</span><span class="p">))</span>
+              <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  </span><span class="si">{}</span><span class="s1"> [label=&quot;</span><span class="si">{}</span><span class="s1">&quot;];&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">childid</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">idx</span><span class="p">))</span>
+              <span class="n">childid</span> <span class="o">=</span> <span class="n">_to_dot_helper</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">childid</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+          <span class="k">return</span> <span class="n">childid</span>
+      <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;digraph &quot;Suffix trie&quot; {&#39;</span><span class="p">)</span>
+      <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  node [shape=circle label=&quot;&quot;];&#39;</span><span class="p">)</span>
+      <span class="n">_to_dot_helper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+      <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;}&#39;</span><span class="p">)</span>
+      <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The example shown by Langsmead in his lecture about suffix trees is reproduced below, i.e. $T=abaaba$. The leaf nodes were labeled with the corresponding suffix number. Internal nodes dont have labels.</p>
+<p>Let`s begin listing all the suffix numbers of $T$ and it's corresponding suffixes.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">T</span> <span class="o">=</span> <span class="s1">&#39;xabxaxa&#39;</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">T</span> <span class="o">+</span> <span class="s1">&#39;$&#39;</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)):</span>
+  <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="n">i</span><span class="p">:])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>0 xabxaxa$
+1 abxaxa$
+2 bxaxa$
+3 xaxa$
+4 axa$
+5 xa$
+6 a$
+7 $
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Then, we build and draw the suffix tree for $T$.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">stree</span> <span class="o">=</span> <span class="n">SuffixTree</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">dotstr</span> stree.to_dot()
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+<div class="output_svg output_subarea ">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Suffix trie Pages: 1 -->
+<svg width="356pt" height="218pt"
+ viewBox="0.00 0.00 356.00 218.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 214)">
+<title>Suffix trie</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-214 352,-214 352,4 -4,4"/>
+<!-- 0 -->
+<g id="node1" class="node">
+<title>0</title>
+<ellipse fill="none" stroke="#000000" cx="246" cy="-192" rx="18" ry="18"/>
+</g>
+<!-- 1 -->
+<g id="node2" class="node">
+<title>1</title>
+<ellipse fill="none" stroke="#000000" cx="105" cy="-105" rx="18" ry="18"/>
+</g>
+<!-- 0&#45;&gt;1 -->
+<g id="edge1" class="edge">
+<title>0&#45;&gt;1</title>
+<path fill="none" stroke="#000000" d="M230.6421,-182.5239C206.1682,-167.4229 158.1234,-137.7783 129.0558,-119.8429"/>
+<polygon fill="#000000" stroke="#000000" points="130.6872,-116.7369 120.3389,-114.4645 127.0114,-122.6942 130.6872,-116.7369"/>
+<text text-anchor="middle" x="191" y="-144.8" font-family="Times,serif" font-size="14.00" fill="#000000">xa</text>
+</g>
+<!-- 5 -->
+<g id="node6" class="node">
+<title>5</title>
+<ellipse fill="none" stroke="#000000" cx="216" cy="-105" rx="18" ry="18"/>
+</g>
+<!-- 0&#45;&gt;5 -->
+<g id="edge5" class="edge">
+<title>0&#45;&gt;5</title>
+<path fill="none" stroke="#000000" d="M240.073,-174.8116C235.8408,-162.5383 230.0651,-145.7887 225.2319,-131.7725"/>
+<polygon fill="#000000" stroke="#000000" points="228.4835,-130.4654 221.9147,-122.1527 221.8659,-132.7474 228.4835,-130.4654"/>
+<text text-anchor="middle" x="235.5" y="-144.8" font-family="Times,serif" font-size="14.00" fill="#000000">a</text>
+</g>
+<!-- 9 -->
+<g id="node10" class="node">
+<title>9</title>
+<ellipse fill="none" stroke="#000000" cx="270" cy="-105" rx="18" ry="18"/>
+<text text-anchor="middle" x="270" y="-101.3" font-family="Times,serif" font-size="14.00" fill="#000000">2</text>
+</g>
+<!-- 0&#45;&gt;9 -->
+<g id="edge9" class="edge">
+<title>0&#45;&gt;9</title>
+<path fill="none" stroke="#000000" d="M250.8568,-174.3943C254.1749,-162.3661 258.6386,-146.1851 262.4211,-132.4737"/>
+<polygon fill="#000000" stroke="#000000" points="265.8651,-133.1503 265.1505,-122.5796 259.1171,-131.2887 265.8651,-133.1503"/>
+<text text-anchor="middle" x="280.5" y="-144.8" font-family="Times,serif" font-size="14.00" fill="#000000">bxaxa$</text>
+</g>
+<!-- 10 -->
+<g id="node11" class="node">
+<title>10</title>
+<ellipse fill="none" stroke="#000000" cx="330" cy="-105" rx="18" ry="18"/>
+<text text-anchor="middle" x="330" y="-101.3" font-family="Times,serif" font-size="14.00" fill="#000000">7</text>
+</g>
+<!-- 0&#45;&gt;10 -->
+<g id="edge10" class="edge">
+<title>0&#45;&gt;10</title>
+<path fill="none" stroke="#000000" d="M262.8558,-185.1823C276.0178,-179.1498 294.0237,-169.2458 306,-156 312.2265,-149.1135 317.1342,-140.3266 320.8455,-131.9937"/>
+<polygon fill="#000000" stroke="#000000" points="324.1556,-133.1441 324.6598,-122.5612 317.6661,-130.5198 324.1556,-133.1441"/>
+<text text-anchor="middle" x="319" y="-144.8" font-family="Times,serif" font-size="14.00" fill="#000000">$</text>
+</g>
+<!-- 2 -->
+<g id="node3" class="node">
+<title>2</title>
+<ellipse fill="none" stroke="#000000" cx="18" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="18" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">3</text>
+</g>
+<!-- 1&#45;&gt;2 -->
+<g id="edge2" class="edge">
+<title>1&#45;&gt;2</title>
+<path fill="none" stroke="#000000" d="M88.2463,-98.2643C74.9061,-92.2202 56.466,-82.2598 44,-69 37.3724,-61.9503 32.0253,-52.8863 27.9434,-44.3598"/>
+<polygon fill="#000000" stroke="#000000" points="31.1001,-42.8434 23.8715,-35.0975 24.692,-45.6605 31.1001,-42.8434"/>
+<text text-anchor="middle" x="55" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">xa$</text>
+</g>
+<!-- 3 -->
+<g id="node4" class="node">
+<title>3</title>
+<ellipse fill="none" stroke="#000000" cx="72" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="72" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">0</text>
+</g>
+<!-- 1&#45;&gt;3 -->
+<g id="edge3" class="edge">
+<title>1&#45;&gt;3</title>
+<path fill="none" stroke="#000000" d="M90.9326,-93.5439C84.1608,-87.1213 76.7189,-78.4999 73,-69 70.2354,-61.9376 69.2085,-53.8929 69.0662,-46.3135"/>
+<polygon fill="#000000" stroke="#000000" points="72.5722,-46.1569 69.365,-36.0592 65.5751,-45.953 72.5722,-46.1569"/>
+<text text-anchor="middle" x="94.5" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">bxaxa$</text>
+</g>
+<!-- 4 -->
+<g id="node5" class="node">
+<title>4</title>
+<ellipse fill="none" stroke="#000000" cx="138" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="138" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">5</text>
+</g>
+<!-- 1&#45;&gt;4 -->
+<g id="edge4" class="edge">
+<title>1&#45;&gt;4</title>
+<path fill="none" stroke="#000000" d="M111.5197,-87.8116C116.2054,-75.4586 122.611,-58.571 127.9483,-44.4998"/>
+<polygon fill="#000000" stroke="#000000" points="131.332,-45.448 131.6061,-34.8567 124.787,-42.9653 131.332,-45.448"/>
+<text text-anchor="middle" x="128" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">$</text>
+</g>
+<!-- 6 -->
+<g id="node7" class="node">
+<title>6</title>
+<ellipse fill="none" stroke="#000000" cx="192" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="192" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">4</text>
+</g>
+<!-- 5&#45;&gt;6 -->
+<g id="edge6" class="edge">
+<title>5&#45;&gt;6</title>
+<path fill="none" stroke="#000000" d="M206.2936,-89.7948C202.7819,-83.58 199.1541,-76.1747 197,-69 194.8439,-61.8185 193.5655,-53.8379 192.8206,-46.3626"/>
+<polygon fill="#000000" stroke="#000000" points="196.3027,-45.9875 192.0869,-36.2675 189.3211,-46.4949 196.3027,-45.9875"/>
+<text text-anchor="middle" x="208" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">xa$</text>
+</g>
+<!-- 7 -->
+<g id="node8" class="node">
+<title>7</title>
+<ellipse fill="none" stroke="#000000" cx="246" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="246" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">1</text>
+</g>
+<!-- 5&#45;&gt;7 -->
+<g id="edge7" class="edge">
+<title>5&#45;&gt;7</title>
+<path fill="none" stroke="#000000" d="M221.927,-87.8116C226.1592,-75.5383 231.9349,-58.7887 236.7681,-44.7725"/>
+<polygon fill="#000000" stroke="#000000" points="240.1341,-45.7474 240.0853,-35.1527 233.5165,-43.4654 240.1341,-45.7474"/>
+<text text-anchor="middle" x="253.5" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">bxaxa$</text>
+</g>
+<!-- 8 -->
+<g id="node9" class="node">
+<title>8</title>
+<ellipse fill="none" stroke="#000000" cx="307" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="307" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">6</text>
+</g>
+<!-- 5&#45;&gt;8 -->
+<g id="edge8" class="edge">
+<title>5&#45;&gt;8</title>
+<path fill="none" stroke="#000000" d="M230.9265,-94.5709C234.7983,-91.9988 239.0045,-89.3187 243,-87 258.472,-78.0213 266.1101,-81.4037 279,-69 286.0861,-62.1812 291.8322,-53.1725 296.2326,-44.6258"/>
+<polygon fill="#000000" stroke="#000000" points="299.5245,-45.8511 300.6287,-35.314 293.1945,-42.8627 299.5245,-45.8511"/>
+<text text-anchor="middle" x="294" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">$</text>
+</g>
+</g>
+</svg>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Note that every path going from the root to a leaf node produce a suffix of $T$ with the suffix number in the leaf node.</p>
+<p>Now that we have a suffix tree implementation we can go back and implement the naive LZ76 parsing algorithm.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Naive-LZ76-parsing-algorithm">Naive LZ76 parsing algorithm<a class="anchor-link" href="#Naive-LZ76-parsing-algorithm">&#182;</a></h1><p>The algorithm relies on the suffix tree (ST) for string $T$ to find longest prefix of $T[i,n]$ already seen in $T[1,i-1]$.</p>
+<ol>
+<li><p>Build an ST for string $T$;</p>
+</li>
+<li><p>Number each internal node $v$ with $c_v$, the smallest number of all the suffixes in $v$´s subtree; this way, $c_v$ is the left most position in $T$ of any copy of the substring on the path from root to node $v$;</p>
+</li>
+<li><p>To obtain the encoding (position, length), i.e. the pair $(s_{i}, l_{i})$, for the substring $T[i, n]$, whith $0 \leq i \leq n$, do:</p>
+<p>a. Follow the only path from the root that matches the prefix $T[i, n]$ keeping track of all $c_{v}$s found on the path;</p>
+<p>b. The traversal stops at point $p$ which not necessarily is a node, when a character breaks the match;</p>
+<p>c. let v be the deepest internal node with the smallest $c_{v}$ found on the path to point $p$ and let depth(v) be the length of the string from the root to v; if we do not cross internal nodes then we output the character $T[i]$; do j &lt;- i + 1. Else, do position $s_{i} = v$ and $l_{i} = depth(v)$;</p>
+<p>d. Output encoding $(s_{i}, l_{i})$ and do j &lt;- i + $l_{i}$;</p>
+<p>e. Do i &lt;- j + 1; if i = n stop; else goto 3.</p>
+</li>
+</ol>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">defaultdict</span>
+
+<span class="k">class</span> <span class="nc">SuffixTreeLZ76</span><span class="p">(</span><span class="n">SuffixTree</span><span class="p">):</span>
+      
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+    <span class="n">SuffixTree</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">followPath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Follow path given by s.  If we fall off tree, return None.  If we</span>
+<span class="sd">        finish mid-edge, return (node, offset) where &#39;node&#39; is child and</span>
+<span class="sd">        &#39;offset&#39; is label offset.  If we finish on a node, return (node,</span>
+<span class="sd">        None). &quot;&quot;&quot;</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># the root not doesnt have parent node</span>
+    <span class="n">cvs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">path_labs</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">out</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="c1"># fell off at a node</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">out</span><span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+        <span class="n">lab</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">lab</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">idx</span>
+        <span class="n">cvs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+        <span class="n">path_labs</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lab</span><span class="p">)</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span>
+        <span class="k">while</span> <span class="n">j</span><span class="o">-</span><span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">lab</span><span class="p">)</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="ow">and</span> <span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">lab</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">j</span><span class="o">-</span><span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">lab</span><span class="p">):</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="n">cur</span>
+            <span class="n">cur</span> <span class="o">=</span> <span class="n">child</span> <span class="c1"># exhausted edge</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">j</span>
+        <span class="k">elif</span> <span class="n">j</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">cur</span><span class="p">,</span> <span class="n">j</span><span class="o">-</span><span class="n">i</span><span class="p">,</span> <span class="n">path_labs</span><span class="p">)</span> <span class="c1"># exhausted query string in middle of edge</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">path_labs</span><span class="p">)</span> <span class="c1"># fell off in the middle of the edge</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">path_labs</span><span class="p">)</span> <span class="c1"># exhausted query string at internal node</span>
+  
+  <span class="k">def</span> <span class="nf">LZ76encoder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Perform the LZ76 parsing of T[1,n]. Outputs the phrases ($z$) of the</span>
+<span class="sd">     LZ76 parsing of T.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">phrases</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+      <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">phrases</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+      <span class="k">else</span><span class="p">:</span>  
+        <span class="n">right_substring</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">node_end</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">lcvs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">followPath</span><span class="p">(</span><span class="n">right_substring</span><span class="p">)</span>
+        <span class="c1">#print(&quot;i=&quot;,i, right_substring, node_end.idx, lcvs)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lcvs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">list</span><span class="p">(</span><span class="n">lcvs</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">i</span><span class="p">:</span>
+   <span class="c1">#       print(t[i])</span>
+          <span class="n">phrases</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+          <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="n">repi</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lcvs</span><span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">lcvs</span><span class="p">)])</span>
+          <span class="n">li</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">repi</span><span class="p">)</span>
+          <span class="k">if</span> <span class="n">li</span> <span class="o">&gt;=</span> <span class="n">i</span><span class="p">:</span>
+           <span class="c1"># print(&quot;Here&quot;)</span>
+           <span class="c1"># print(&quot;First&quot;,i, repi, li)</span>
+            <span class="n">offset</span> <span class="o">=</span> <span class="p">(</span><span class="n">li</span><span class="o">-</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">offset</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+              <span class="n">repi</span> <span class="o">=</span> <span class="n">repi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+              <span class="n">repi</span> <span class="o">=</span> <span class="n">repi</span><span class="p">[:</span><span class="o">-</span><span class="n">offset</span><span class="p">]</span>
+            <span class="n">li</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">repi</span><span class="p">)</span>
+           <span class="c1"># print(&quot;Second&quot;,i, repi, li)</span>
+          <span class="n">phrases</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">min</span><span class="p">(</span><span class="n">lcvs</span><span class="p">),</span> <span class="n">li</span><span class="p">))</span>
+          <span class="n">i</span> <span class="o">+=</span> <span class="n">li</span>
+    <span class="k">return</span> <span class="n">phrases</span>
+    
+  <span class="k">def</span> <span class="nf">LZ76decoder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phrases</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Decode a LZ78 codded string. Input is a LZ78 codded string. &quot;&quot;&quot;</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">phrases</span><span class="p">:</span>
+      <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">T</span> <span class="o">+=</span> <span class="n">z</span>
+      <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="n">si</span><span class="p">,</span> <span class="n">li</span> <span class="o">=</span> <span class="n">z</span>
+        <span class="n">T</span> <span class="o">+=</span> <span class="n">T</span><span class="p">[</span><span class="n">si</span><span class="p">:</span><span class="n">si</span><span class="o">+</span><span class="n">li</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">T</span>
+
+  
+  <span class="k">def</span> <span class="nf">_iterate_over_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Auxiliary function to traverse a tree &quot;&quot;&quot;</span>
+    <span class="n">reverse_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">def</span> <span class="nf">_to_iter</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">reverse_dict</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+          <span class="n">reverse_dict</span><span class="p">[</span><span class="n">child</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
+          <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Node lab=</span><span class="si">{}</span><span class="s2">, id=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">lab</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">idx</span><span class="p">))</span>
+          <span class="n">_to_iter</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">reverse_dict</span><span class="p">)</span>
+    <span class="n">_to_iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">reverse_dict</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">reverse_dict</span>
+  
+  <span class="k">def</span> <span class="nf">do_preorder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Traverse the tree in preorder &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">preorder_traversal</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
+      <span class="k">yield</span> <span class="n">root</span>
+      <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">yield from</span> <span class="n">preorder_traversal</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">preorder_traversal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
+  
+  <span class="k">def</span> <span class="nf">do_posorder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Traverse the tree in posorder &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">posorder_traversal</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
+      <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">yield from</span> <span class="n">posorder_traversal</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+      <span class="k">yield</span> <span class="n">root</span>
+    <span class="k">return</span> <span class="n">posorder_traversal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
+
+  
+  <span class="k">def</span> <span class="nf">rec_dfs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">S</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Function to traverse the tree in a depth-first search (DFS) manner &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">S</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">S</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span> <span class="c1"># Initialize the history</span>
+    <span class="n">S</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">root</span><span class="p">)</span> <span class="c1"># We&#39;ve visited s</span>
+<span class="c1">#    print(root.lab, root.idx)</span>
+    <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span> <span class="c1"># Explore neighbors</span>
+      <span class="k">if</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">S</span><span class="p">:</span> <span class="k">continue</span> <span class="c1"># Already visited: Skip</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">rec_dfs</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">S</span><span class="p">)</span> <span class="c1"># New: Explore recursively</span>
+    <span class="k">return</span> <span class="n">S</span>
+    
+  <span class="k">def</span> <span class="nf">do_rec_dfs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Apply recursive DFS &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rec_dfs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
+        
+  <span class="k">def</span> <span class="nf">enumerate_internal_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; This function first applies posorder in ST yielding a sorted vector.</span>
+<span class="sd">    The sorted vector is a set of nodes where the childs come first than</span>
+<span class="sd">    their parents. For each internal node in sorted vector we perform a DFS with</span>
+<span class="sd">     the internal node beeing the root yielding the subtree. We get the minimum</span>
+<span class="sd">     number in the subtree of each internal node as the cv number.</span>
+<span class="sd">    Enumerate all internal nodes in ST &quot;&quot;&quot;</span>
+    <span class="n">stree_pos</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">do_posorder</span><span class="p">())</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stree_pos</span><span class="p">)):</span>
+      <span class="k">if</span> <span class="n">stree_pos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">stree_pos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">idx</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">idx</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rec_dfs</span><span class="p">(</span><span class="n">stree_pos</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">idx</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">])</span>
+    
+  <span class="k">def</span> <span class="nf">to_dot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="sd">&quot;&quot;&quot; Return dot representation of trie to make a picture &quot;&quot;&quot;</span>
+      <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+      <span class="k">def</span> <span class="nf">_to_dot_helper</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">parid</span><span class="p">):</span>
+          <span class="n">childid</span> <span class="o">=</span> <span class="n">parid</span>
+          <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<span class="c1">#              print(c, child)</span>
+              <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  </span><span class="si">%d</span><span class="s1"> -&gt; </span><span class="si">%d</span><span class="s1"> [ label=&quot;</span><span class="si">%s</span><span class="s1">&quot; ];&#39;</span> <span class="o">%</span> 
+                           <span class="p">(</span><span class="n">parid</span><span class="p">,</span> <span class="n">childid</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">lab</span><span class="p">))</span>
+              <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  </span><span class="si">{}</span><span class="s1"> [label=&quot;</span><span class="si">{}</span><span class="s1">&quot;];&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">childid</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">idx</span><span class="p">))</span>
+              <span class="n">childid</span> <span class="o">=</span> <span class="n">_to_dot_helper</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">childid</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+          <span class="k">return</span> <span class="n">childid</span>
+      <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;digraph &quot;Suffix trie&quot; {&#39;</span><span class="p">)</span>
+      <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  node [shape=circle label=&quot;&quot;];&#39;</span><span class="p">)</span>
+      <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  0 [label=&quot;</span><span class="si">{}</span><span class="s1">&quot;];&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">idx</span><span class="p">))</span>
+      <span class="n">_to_dot_helper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+      <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;}&#39;</span><span class="p">)</span>
+      <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+    
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">T</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[15]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&#39;xabxaxa&#39;</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">stree</span> <span class="o">=</span> <span class="n">SuffixTreeLZ76</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#stree = SuffixTreeLZ76(&#39;abbacbba&#39;)</span>
+<span class="c1">#stree = SuffixTreeLZ76(&#39;abaaba&#39;)</span>
+<span class="c1">#stree = SuffixTreeLZ76(&#39;mississippi&#39;)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">stree</span><span class="o">.</span><span class="n">enumerate_internal_nodes</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">dotstr</span> stree.to_dot()
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+<div class="output_svg output_subarea ">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Suffix trie Pages: 1 -->
+<svg width="356pt" height="218pt"
+ viewBox="0.00 0.00 356.00 218.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 214)">
+<title>Suffix trie</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-214 352,-214 352,4 -4,4"/>
+<!-- 0 -->
+<g id="node1" class="node">
+<title>0</title>
+<ellipse fill="none" stroke="#000000" cx="246" cy="-192" rx="18" ry="18"/>
+<text text-anchor="middle" x="246" y="-188.3" font-family="Times,serif" font-size="14.00" fill="#000000">0</text>
+</g>
+<!-- 1 -->
+<g id="node2" class="node">
+<title>1</title>
+<ellipse fill="none" stroke="#000000" cx="105" cy="-105" rx="18" ry="18"/>
+<text text-anchor="middle" x="105" y="-101.3" font-family="Times,serif" font-size="14.00" fill="#000000">0</text>
+</g>
+<!-- 0&#45;&gt;1 -->
+<g id="edge1" class="edge">
+<title>0&#45;&gt;1</title>
+<path fill="none" stroke="#000000" d="M230.6421,-182.5239C206.1682,-167.4229 158.1234,-137.7783 129.0558,-119.8429"/>
+<polygon fill="#000000" stroke="#000000" points="130.6872,-116.7369 120.3389,-114.4645 127.0114,-122.6942 130.6872,-116.7369"/>
+<text text-anchor="middle" x="191" y="-144.8" font-family="Times,serif" font-size="14.00" fill="#000000">xa</text>
+</g>
+<!-- 5 -->
+<g id="node6" class="node">
+<title>5</title>
+<ellipse fill="none" stroke="#000000" cx="216" cy="-105" rx="18" ry="18"/>
+<text text-anchor="middle" x="216" y="-101.3" font-family="Times,serif" font-size="14.00" fill="#000000">1</text>
+</g>
+<!-- 0&#45;&gt;5 -->
+<g id="edge5" class="edge">
+<title>0&#45;&gt;5</title>
+<path fill="none" stroke="#000000" d="M240.073,-174.8116C235.8408,-162.5383 230.0651,-145.7887 225.2319,-131.7725"/>
+<polygon fill="#000000" stroke="#000000" points="228.4835,-130.4654 221.9147,-122.1527 221.8659,-132.7474 228.4835,-130.4654"/>
+<text text-anchor="middle" x="235.5" y="-144.8" font-family="Times,serif" font-size="14.00" fill="#000000">a</text>
+</g>
+<!-- 9 -->
+<g id="node10" class="node">
+<title>9</title>
+<ellipse fill="none" stroke="#000000" cx="270" cy="-105" rx="18" ry="18"/>
+<text text-anchor="middle" x="270" y="-101.3" font-family="Times,serif" font-size="14.00" fill="#000000">2</text>
+</g>
+<!-- 0&#45;&gt;9 -->
+<g id="edge9" class="edge">
+<title>0&#45;&gt;9</title>
+<path fill="none" stroke="#000000" d="M250.8568,-174.3943C254.1749,-162.3661 258.6386,-146.1851 262.4211,-132.4737"/>
+<polygon fill="#000000" stroke="#000000" points="265.8651,-133.1503 265.1505,-122.5796 259.1171,-131.2887 265.8651,-133.1503"/>
+<text text-anchor="middle" x="280.5" y="-144.8" font-family="Times,serif" font-size="14.00" fill="#000000">bxaxa$</text>
+</g>
+<!-- 10 -->
+<g id="node11" class="node">
+<title>10</title>
+<ellipse fill="none" stroke="#000000" cx="330" cy="-105" rx="18" ry="18"/>
+<text text-anchor="middle" x="330" y="-101.3" font-family="Times,serif" font-size="14.00" fill="#000000">7</text>
+</g>
+<!-- 0&#45;&gt;10 -->
+<g id="edge10" class="edge">
+<title>0&#45;&gt;10</title>
+<path fill="none" stroke="#000000" d="M262.8558,-185.1823C276.0178,-179.1498 294.0237,-169.2458 306,-156 312.2265,-149.1135 317.1342,-140.3266 320.8455,-131.9937"/>
+<polygon fill="#000000" stroke="#000000" points="324.1556,-133.1441 324.6598,-122.5612 317.6661,-130.5198 324.1556,-133.1441"/>
+<text text-anchor="middle" x="319" y="-144.8" font-family="Times,serif" font-size="14.00" fill="#000000">$</text>
+</g>
+<!-- 2 -->
+<g id="node3" class="node">
+<title>2</title>
+<ellipse fill="none" stroke="#000000" cx="18" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="18" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">3</text>
+</g>
+<!-- 1&#45;&gt;2 -->
+<g id="edge2" class="edge">
+<title>1&#45;&gt;2</title>
+<path fill="none" stroke="#000000" d="M88.2463,-98.2643C74.9061,-92.2202 56.466,-82.2598 44,-69 37.3724,-61.9503 32.0253,-52.8863 27.9434,-44.3598"/>
+<polygon fill="#000000" stroke="#000000" points="31.1001,-42.8434 23.8715,-35.0975 24.692,-45.6605 31.1001,-42.8434"/>
+<text text-anchor="middle" x="55" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">xa$</text>
+</g>
+<!-- 3 -->
+<g id="node4" class="node">
+<title>3</title>
+<ellipse fill="none" stroke="#000000" cx="72" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="72" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">0</text>
+</g>
+<!-- 1&#45;&gt;3 -->
+<g id="edge3" class="edge">
+<title>1&#45;&gt;3</title>
+<path fill="none" stroke="#000000" d="M90.9326,-93.5439C84.1608,-87.1213 76.7189,-78.4999 73,-69 70.2354,-61.9376 69.2085,-53.8929 69.0662,-46.3135"/>
+<polygon fill="#000000" stroke="#000000" points="72.5722,-46.1569 69.365,-36.0592 65.5751,-45.953 72.5722,-46.1569"/>
+<text text-anchor="middle" x="94.5" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">bxaxa$</text>
+</g>
+<!-- 4 -->
+<g id="node5" class="node">
+<title>4</title>
+<ellipse fill="none" stroke="#000000" cx="138" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="138" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">5</text>
+</g>
+<!-- 1&#45;&gt;4 -->
+<g id="edge4" class="edge">
+<title>1&#45;&gt;4</title>
+<path fill="none" stroke="#000000" d="M111.5197,-87.8116C116.2054,-75.4586 122.611,-58.571 127.9483,-44.4998"/>
+<polygon fill="#000000" stroke="#000000" points="131.332,-45.448 131.6061,-34.8567 124.787,-42.9653 131.332,-45.448"/>
+<text text-anchor="middle" x="128" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">$</text>
+</g>
+<!-- 6 -->
+<g id="node7" class="node">
+<title>6</title>
+<ellipse fill="none" stroke="#000000" cx="192" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="192" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">4</text>
+</g>
+<!-- 5&#45;&gt;6 -->
+<g id="edge6" class="edge">
+<title>5&#45;&gt;6</title>
+<path fill="none" stroke="#000000" d="M206.2936,-89.7948C202.7819,-83.58 199.1541,-76.1747 197,-69 194.8439,-61.8185 193.5655,-53.8379 192.8206,-46.3626"/>
+<polygon fill="#000000" stroke="#000000" points="196.3027,-45.9875 192.0869,-36.2675 189.3211,-46.4949 196.3027,-45.9875"/>
+<text text-anchor="middle" x="208" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">xa$</text>
+</g>
+<!-- 7 -->
+<g id="node8" class="node">
+<title>7</title>
+<ellipse fill="none" stroke="#000000" cx="246" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="246" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">1</text>
+</g>
+<!-- 5&#45;&gt;7 -->
+<g id="edge7" class="edge">
+<title>5&#45;&gt;7</title>
+<path fill="none" stroke="#000000" d="M221.927,-87.8116C226.1592,-75.5383 231.9349,-58.7887 236.7681,-44.7725"/>
+<polygon fill="#000000" stroke="#000000" points="240.1341,-45.7474 240.0853,-35.1527 233.5165,-43.4654 240.1341,-45.7474"/>
+<text text-anchor="middle" x="253.5" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">bxaxa$</text>
+</g>
+<!-- 8 -->
+<g id="node9" class="node">
+<title>8</title>
+<ellipse fill="none" stroke="#000000" cx="307" cy="-18" rx="18" ry="18"/>
+<text text-anchor="middle" x="307" y="-14.3" font-family="Times,serif" font-size="14.00" fill="#000000">6</text>
+</g>
+<!-- 5&#45;&gt;8 -->
+<g id="edge8" class="edge">
+<title>5&#45;&gt;8</title>
+<path fill="none" stroke="#000000" d="M230.9265,-94.5709C234.7983,-91.9988 239.0045,-89.3187 243,-87 258.472,-78.0213 266.1101,-81.4037 279,-69 286.0861,-62.1812 291.8322,-53.1725 296.2326,-44.6258"/>
+<polygon fill="#000000" stroke="#000000" points="299.5245,-45.8511 300.6287,-35.314 293.1945,-42.8627 299.5245,-45.8511"/>
+<text text-anchor="middle" x="294" y="-57.8" font-family="Times,serif" font-size="14.00" fill="#000000">$</text>
+</g>
+</g>
+</svg>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The encoded LZ78 for text $T=xabxaxa\$$ is:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">zs</span> <span class="o">=</span> <span class="n">stree</span><span class="o">.</span><span class="n">LZ76encoder</span><span class="p">(</span><span class="n">T</span><span class="o">+</span><span class="s1">&#39;$&#39;</span><span class="p">);</span> <span class="n">zs</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[20]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&#39;x&#39;, &#39;a&#39;, &#39;b&#39;, (0, 2), (0, 2), &#39;$&#39;]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>And using the implementation to decode the parsed string we have.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">stree</span><span class="o">.</span><span class="n">LZ76decoder</span><span class="p">(</span><span class="n">zs</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[21]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&#39;xabxaxa$&#39;</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong>Implementation details and notes</strong>: I dont know if the complexity time is $O(m)$ because my implementation is matching every $T[i..m]$ for all i $\in$ {0..m}. So, maybe it's complexity is growing in order $m^2$ instead of $m$. Certainly the suffix tree construction takes $O(m^{2})$ time. But, when I find a previous match, i.e. a portion of the text that can be compressed, the algorithm jumps the lenght of the compressed part. This may be contributing to lower the running time.</p>
+<p>The algorithm perform the enumeration of all internal nodes through the creation of a subtree for each internal node, and them keeps the minimum value found in a leaf belonging to the subtree. Since we have to enumerate the internal nodes from in a bottom-up fashion we first sort the nodes in pos-order. We iterate over the pos-order vector of nodes creating the subtree for each internal node found.</p>
+<p>I've used a dictionary to keep track of numbers in the internal nodes encountered and their labels when the algorithm traverses a path from root to $p$. This code is implemented on function <code>followPath()</code>. This may be a naive method because we always store a dictionary with all the paths and labels and this can be a burden to very deep suffix trees. Another cavet of the implementation was already mentioned and is related to the fact that every time we traverses all the remaining string. This could be avoided narrowing the traverse path to a number of characters equal to the index i of $T[i..m]$ because we can only have previous substrings of length $i$.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="LZ76-parsing-of-a-genome-sequence">LZ76 parsing of a genome sequence<a class="anchor-link" href="#LZ76-parsing-of-a-genome-sequence">&#182;</a></h3><p>Let`s complicate the things in order to test if the LZ76 parsing can handle very long texts. I choose a viral genome, phage lambda, that infects E. coli has our "complicated" example. In fact, this is a very small genome that has only 48.502 base pairs. First we download the genome from NCBI nucleotide collection from this link. But, we'll take another path and download the genome directly from the command line using the python library <em>ncbi-acc-download</em>. We do it in the following lines.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span> pip install -q ncbi-acc-download
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Then, we download the phage lambda genome.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span> ncbi-acc-download -m nucleotide -F fasta NC_001416.1
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>And check if our file is what we`re expecting, i.e. a collection of nucleotides.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span> head NC_001416.1.fa
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>&gt;NC_001416.1 Enterobacteria phage lambda, complete genome
+GGGCGGCGACCTCGCGGGTTTTCGCTATTTATGAAAATTTTCCGGTTTAAGGCGTTTCCGTTCTTCTTCG
+TCATAACTTAATGTTTTTATTTAAAATACCCTCTGAAAAGAAAGGAAACGACAGGTGCTGAAAGCGAGGC
+TTTTTGGCCTCTGTCGTTTCCTTTCTCTGTTTTTGTCCGTGGAATGAACAATGGAAGTCAACAAAAAGCA
+GCTGGCTGACATTTTCGGTGCGAGTATCCGTACCATTCAGAACTGGCAGGAACAGGGAATGCCCGTTCTG
+CGAGGCGGTGGCAAGGGTAATGAGGTGCTTTATGACTCTGCCGCCGTCATAAAATGGTATGCCGAAAGGG
+ATGCTGAAATTGAGAACGAAAAGCTGCGCCGGGAGGTTGAAGAACTGCGGCAGGCCAGCGAGGCAGATCT
+CCAGCCAGGAACTATTGAGTACGAACGCCATCGACTTACGCGTGCGCAGGCCGACGCACAGGAACTGAAG
+AATGCCAGAGACTCCGCTGAAGTGGTGGAAACCGCATTCTGTACTTTCGTGCTGTCGCGGATCGCAGGTG
+AAATTGCCAGTATTCTCGACGGGCTCCCCCTGTCGGTGCAGCGGCGTTTTCCGGAACTGGAAAACCGACA
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Next, we load our genome into a variable to be able to perform some analysis on top of it. The first analysis will be related to the execution time of the implemented algorithm in a range of text lenghts. Be aware that the following codes take some minutes to run !</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">phage_geno</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;NC_001416.1.fa&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">phagefa</span><span class="p">:</span>
+  <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">phagefa</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">):</span>
+      <span class="k">continue</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">phage_geno</span> <span class="o">+=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">do_LZ_parsing</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+  <span class="n">ST</span> <span class="o">=</span> <span class="n">SuffixTreeLZ76</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+  <span class="n">ST</span><span class="o">.</span><span class="n">enumerate_internal_nodes</span><span class="p">()</span>
+  <span class="n">z</span> <span class="o">=</span> <span class="n">ST</span><span class="o">.</span><span class="n">LZ76encoder</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">z</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Mrange</span> <span class="o">=</span> <span class="mi">10000</span>
+
+<span class="n">t_LZ76_parsing</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">M</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">Mrange</span><span class="p">,</span> <span class="mi">500</span><span class="p">):</span>
+  
+  <span class="n">t1</span> <span class="o">=</span> <span class="o">%</span><span class="k">timeit</span> -n 3 -oq do_LZ_parsing(phage_geno[:M])
+  
+  <span class="n">t_LZ76_parsing</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t1</span><span class="o">.</span><span class="n">best</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="c1"># use seaborn for nice default plot settings</span>
+<span class="kn">import</span> <span class="nn">seaborn</span><span class="p">;</span> <span class="n">seaborn</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[45]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">Mrange</span><span class="p">,</span> <span class="mi">500</span><span class="p">),</span> <span class="n">t_LZ76_parsing</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;LZ76 compression using suffix tree&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper left&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Text length&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Execution Time (s)&#39;</span><span class="p">);</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+RK5CYII=
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>As we see, the logarithm scales $~O(m^2)$ in the large limit when the text becomes larger and larger. So it is inappropriate for larger genomes. We can also, dig deeper into the code and check which function is taking more time to run using a python utility called <code>line_profiler</code>. We can install it through pip, as follows:</p>
+<p>If we consider that every step take $1\ \mu$ second in a computer, and that the algorithm has running time $O(m^2)$ we have the following results.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span> pip install -q line_profiler
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Once it's installed, we load the extension into the ipython notebook and use the magic function <code>%lprun</code> to debug the running time of our functions.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> line_profiler
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[0]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">do_LZ_parsing_prof</span><span class="p">():</span>
+  <span class="n">g</span> <span class="o">=</span> <span class="n">phage_geno</span><span class="p">[:</span><span class="mi">500</span><span class="p">]</span>
+  <span class="n">ST</span> <span class="o">=</span> <span class="n">SuffixTreeLZ76</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+  <span class="n">ST</span><span class="o">.</span><span class="n">enumerate_internal_nodes</span><span class="p">()</span>
+  <span class="n">z</span> <span class="o">=</span> <span class="n">ST</span><span class="o">.</span><span class="n">LZ76encoder</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[66]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">lprun</span> -s -f do_LZ_parsing_prof -T lp_results.txt do_LZ_parsing_prof()
+<span class="o">%</span> <span class="n">cat</span> <span class="n">lp_results</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+*** Profile printout saved to text file &#39;lp_results.txt&#39;. 
+Timer unit: 1e-06 s
+
+Total time: 0.149242 s
+File: &lt;ipython-input-64-2529e879245a&gt;
+Function: do_LZ_parsing_prof at line 1
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+     1                                           def do_LZ_parsing_prof():
+     2         1          4.0      4.0      0.0    g = phage_geno[:500]
+     3         1      97279.0  97279.0     65.2    ST = SuffixTreeLZ76(g)
+     4         1      10262.0  10262.0      6.9    ST.enumerate_internal_nodes()
+     5         1      41697.0  41697.0     27.9    z = ST.LZ76encoder(g)</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The output shows us that most of the time the parsing spent in building the suffix tree data structure.</p>
+<p><em>This post was written entirely in the Jupyter notebook. You can download this notebook, or see a static view on nbviewer or even open it on google colab.</em></p>
+
+</div>
+</div>
+</div>
+ 
+
+
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = '//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: 'center'," +
+        "    displayIndent: '0em'," +
+        "    showMathMenu: true," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['$','$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        " linebreaks: { automatic: true, width: '95% container' }, " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'black ! important'} }" +
+        "    } " +
+        "}); ";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+        </div>
+
+        <div class="meta">
+            <div>
+                    <a href="/tag/algorithms.html" class="tag">algorithms</a>
+                    <a href="/tag/data-structures.html" class="tag">data structures</a>
+                    <a href="/tag/string.html" class="tag">string</a>
+                    <a href="/tag/genomics.html" class="tag">genomics</a>
+            </div>
+        </div>
+    </article>
+
+
+</div>
+
+<style type="text/css">
+{
+    max-width: 700px;
+}
+
+.text_cell .prompt {
+    display: none;
+}
+
+div.cell {
+    padding: 0;
+}
+
+div.text_cell_render {
+    padding: 0;
+}
+
+div.prompt {
+    font-size: 13px;
+}
+
+div.input_prompt {
+    padding: .7em 0.2em;
+}
+
+div.output_prompt {
+    padding: .4em .2em;
+}
+
+div.input_area {
+    margin: .2em 0.4em;
+    max-width: 580px;
+}
+
+table.dataframe {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    line-height: 20px;
+}
+
+table.dataframe th, td {
+    padding: 4px;
+    text-align: left;
+}
+
+pre code {
+    background-color: inherit;
+}</style>
+
+        </div>
+<!--
+    <footer>
+      <p>
+        © 2012-2017 Rodrigo Theodoro, license <a href="https://github.com/jakevdp/jakevdp.github.io-source/blob/master/LICENSE"> </a>
+        unless otherwise noted.
+        Generated by <a href= "http://docs.getpelican.com/">Pelican</a>.
+      </p>
+    </footer>
+-->
+    </body>
+</html>
